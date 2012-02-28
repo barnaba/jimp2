@@ -13,6 +13,7 @@
 \usepackage[table]{xcolor}
 \usepackage{subfig}
 \usepackage{listings}
+\usepackage[backgroundcolor=white]{todonotes}
 \definecolor{dkgreen}{rgb}{0.2,0.8,0.2}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
@@ -133,6 +134,44 @@ Odradzam użytkownikowi podawanie programowi siatek, które przecinają się ze 
 Jeżeli użytkownik koniecznie chce podać bezsensowne dane, to otrzyma bezsensowne wyniki.
 Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypisany żaden kod błędu.
 
+\newpage
 \section{Specyfikacja implementacyjna}
+\subsection{Algorytm}
+\subsubsection{Działanie programu}
+\todo[noline]{szkic!}
+\begin{lstlisting}[caption=Przykładowe wywołanie]
+  wczytaj dane z~pliku poly do struktury p
+  dla kazdego pliku .ele:
+    wczytaj dane z~plikow ele i~nodes do struktury E
+    znajdz w~strukturze E krawedzie, ktore wystepuja tylko raz
+    usun te krawedzie ze stroktury E
+    dodaj te krawedzie do struktury P jako sekcje
+    dodaj dziure do struktury P wewnatrz kazdego trojkata ze struktury E
+  wykonaj triangulacje na strukturze p
+  zapisz wynik triangulacji do plikow ele i~node
+\end{lstlisting}
+
+\subsubsection{Znajdowanie krawędzi, które występują tylko raz}
+\todo[noline]{szkic!}
+\todo[noline]{sortować T?}
+\begin{lstlisting}[caption=Przykładowe wywołanie]
+  struct element {
+    double lower_node_id
+    double higher_node_id
+    boolean more_than_once
+  }
+
+  T = element[]
+
+  Dla kazdego elementu e:
+    pos~= znajdz w~T element
+    if pos:
+      T[pos]->more_than_once = true
+      continue
+    else:
+      T[pos]->lower_node_id  = e->lower_node_id
+      T[pos]->higher_node_id = e->higher_node_id
+      T[pos]->more_than_once = false
+\end{lstlisting}
 
 \end{document}
