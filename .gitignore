@@ -1,2 +1,4 @@
-vendor/triangle/showme
-vendor/triangle/triangle
+siatkonator
+*.o
+showme
+triangle
