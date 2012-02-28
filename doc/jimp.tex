@@ -1,0 +1,138 @@
+%\documentclass[a4paper]{scrartcl}
+\documentclass[a4paper]{article}
+\usepackage{setspace}
+\usepackage{url}
+\usepackage{mdwlist}
+\usepackage{polski}
+\usepackage[utf8x]{inputenc}
+\usepackage{color}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage[unicode=true]{hyperref}
+\usepackage{multirow}
+\usepackage[table]{xcolor}
+\usepackage{subfig}
+\usepackage{listings}
+\definecolor{dkgreen}{rgb}{0.2,0.8,0.2}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\siatkonator}{\textbf{Siatkonator} }
+\renewcommand{\triangle}{\href{http://www.cs.cmu.edu/~quake/triangle.html}{triangle}}
+\lstset{ %
+  basicstyle=\ttfamily\footnotesize,
+  numbers=left,
+  numberstyle=\footnotesize,
+  stepnumber=1,
+  numbersep=5pt,
+  breaklines=true,
+  tabsize=2,
+  showspaces=false,
+  showstringspaces=false,
+  frame=single,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{mauve},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+}
+
+\begin{document}
+\begin{titlepage}
+
+  \begin{center}
+
+
+    % Upper part of the page
+    \includegraphics[width=0.3\textwidth]{logo.jpg}\\[1cm]
+
+    \begin{onehalfspace}
+      \textsc{\LARGE Wydział Elektryczny Politechniki Warszawskiej}\\[1.5cm]
+    \end{onehalfspace}
+
+
+
+    \textsc{\Large Języki I~Metody Programowania II}\\[0.5cm]
+
+    % Title
+    \HRule \\[0.4cm]
+    {\huge \bfseries Siatkonator }\\[0.2cm]
+    \HRule \\[1.5cm]
+
+    % Author and supervisor
+    \begin{flushleft} \large
+      \emph{Autor:}\\
+      Barnaba \textsc{Turek}
+    \end{flushleft}
+    \vfill
+
+    % Bottom of the page
+    {\large \today}
+
+  \end{center}
+
+\end{titlepage}
+\sloppy
+
+\setcounter{tocdepth}{4}
+\tableofcontents
+
+\section{Specyfikacja funkcjonalna}
+\subsection{Program}
+\siatkonator to program sklejający siatki trójkątne.
+Program przyjmuje jedną lub więcej siatek trójkątnych oraz jeden wielokąt.
+
+Wynikiem działania programu jest siatka trójkątna opisująca zadany wielokąt, która zawiera podane określone siatki.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{ilustracja.png}
+  \caption{przykład sklejania zadanego wielokątu W~i~siatek A~i~B}
+\end{figure}
+
+\subsection{Pliki}
+\siatkonator korzysta z~plików w~formatach \texttt{poly}, \texttt{ele} i~\texttt{node}.
+
+\begin{description}
+  \item[poly] \href{http://www.cs.cmu.edu/~quake/triangle.poly.html}{format pliku opisującego wielokąt}
+  \item[ele] \href{http://www.cs.cmu.edu/~quake/triangle.ele.html}{format pliku opisującego z~których wierzchołków składają się trójkąty siatki}
+  \item[poly] \href{http://www.cs.cmu.edu/~quake/triangle.poly.html}{format pliku opisującego wierzchołki siatki}
+\end{description}
+
+Wszystkie wykorzystywane formaty są zgodne z~formatami wykorzystywanymi przez program \triangle.
+
+\subsection{Wywołanie}
+Program nie prowadzi dialogu z~użytkownikiem.
+
+\begin{lstlisting}[caption=Przykładowe wywołanie]
+  $ siatkonator -e siatka1.ele -e siatka2.ele polygon.poly
+\end{lstlisting}
+
+Ostatni argument programu określa nazwę pliku (wraz ze ścieżką) w~którym opisany jest wielokąt.
+Następne argumenty określają opcje wykonania programu i~nie są wymagane.
+
+Dostępne są następujące opcje:
+\begin{description}
+  \item[\texttt{-e <name>}] dodaje siatkę, która zostanie ``sklejona'' z~wielokątem. Program zakłada, że istnieje także plik o~takiej samej nazwie bazowej z~rozszerzeniem \texttt{node} opisujący wierzchołki.
+  \item[\texttt{-o <name>}] podaje nazwę pliku wyjściowego. W~przypadku braku tego parametru wynik zostanie wypisany na standardowe wejście (najpierw plik ele, potem node).
+  \item[\texttt{-a <area>}] określa maksymalną powierzchnię trójkąta (nie zmienia zadanych siatek!).
+  \item[\texttt{-q <degrees>}] określa minimalną miarę kąta w~trójkącie w~wygenerowanej siatce trójkątnej (nie zmienia zadanych siatek!),
+\end{description}
+
+W~przypadku powodzenia program zwraca zero. W~przeciwnym wypadku program zwraca jeden z~kodów błędu:
+
+\begin{description}
+  \item[\texttt{kod 1}] Błąd otwarcia pliku (spowodowany np. brakiem uprawnień lub pliku).
+  \item[\texttt{kod 2}] Błąd wczytania pliku (spowodowany błędnym formatem któregoś z~plików źródłowych).
+  \item[\texttt{kod 3}] Błędny format argumentów linii poleceń.
+\end{description}
+
+Ponadto program w~czasie działania wypisuje informacje o~swoim aktualnym stanie na wyjście \texttt{STDERR}.
+
+\subsection{Dodatkowe uwagi}
+Odradzam użytkownikowi podawanie programowi siatek, które przecinają się ze sobą, bądź przecinają się z~podanym wielokątem.
+Jeżeli użytkownik koniecznie chce podać bezsensowne dane, to otrzyma bezsensowne wyniki.
+Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypisany żaden kod błędu.
+
+\section{Specyfikacja implementacyjna}
+
+\end{document}
