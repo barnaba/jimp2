@@ -14,6 +14,7 @@ void siatkonator_log(const char* msg){
 }
 
 int main(int argc, char ** argv){
+  struct arg_lit *help = arg_lit0("h", "help", "print usage");
   struct arg_dbl *surface = arg_dbl0("a", "surface","<VALUE>", "maximum surface of the triangle");
   struct arg_dbl *angle = arg_dbl0("q", "angle","<VALUE>", "minimum angle used for triangles");
   struct arg_file *input_ele_files = arg_filen("e","elements","<.ELE FILE>",0,argc,"input meshes");
@@ -21,20 +22,26 @@ int main(int argc, char ** argv){
   struct arg_file *output_ele_file = arg_file0("o","output","<.ELE FILE>","output file");
   struct arg_end *end = arg_end(20);
   int nerrors;
-  void *argtable[] = {surface, angle, input_ele_files, input_poly_file, output_ele_file, end};
+  void *argtable[] = {help, surface, angle, input_ele_files, output_ele_file, input_poly_file, end};
   char msg[512];
 
   if (arg_nullcheck(argtable) != 0)
     siatkonator_log("error: insufficient memory");
 
   nerrors = arg_parse(argc,argv,argtable);
-  if (nerrors){
-    siatkonator_log("Error parsing command line options");
+  if (nerrors > 0){
+    arg_print_errors(stdout, end, "siatkonator");
+    siatkonator_log("Error parsing command line options.");
     return 3;
   }
 
-  if (nerrors==0){
+  if (help->count){
+    fprintf(stderr, "usage: siatkanator ");
+    arg_print_syntaxv(stderr, argtable, "\n");
+    return 0;
+  }
 
+  if (nerrors==0){
     if (surface->count){
       sprintf(msg, "Maximum surface: %f", surface->dval[0]);
       siatkonator_log(msg);
