@@ -52,7 +52,7 @@
 
 
 
-    \textsc{\Large Języki I~Metody Programowania II}\\[0.5cm]
+    \textsc{Języki i~Metody Programowania II -- projekt 1}\\[0.5cm]
 
     % Title
     \HRule \\[0.4cm]
@@ -62,7 +62,8 @@
     % Author and supervisor
     \begin{flushleft} \large
       \emph{Autor:}\\
-      Barnaba \textsc{Turek}
+      Barnaba \textsc{Turek}\\
+      \href{mailto:barnabaturek@gmail.com}{barnabaturek@gmail.com}
     \end{flushleft}
     \vfill
 
@@ -90,17 +91,6 @@ Wynikiem działania programu jest siatka trójkątna opisująca zadany wielokąt
   \caption{przykład sklejania zadanego wielokątu W~i~siatek A~i~B}
 \end{figure}
 
-\subsection{Pliki}
-\siatkonator korzysta z~plików w~formatach \texttt{poly}, \texttt{ele} i~\texttt{node}.
-
-\begin{description}
-  \item[poly] \href{http://www.cs.cmu.edu/~quake/triangle.poly.html}{format pliku opisującego wielokąt}
-  \item[ele] \href{http://www.cs.cmu.edu/~quake/triangle.ele.html}{format pliku opisującego z~których wierzchołków składają się trójkąty siatki}
-  \item[poly] \href{http://www.cs.cmu.edu/~quake/triangle.poly.html}{format pliku opisującego wierzchołki siatki}
-\end{description}
-
-Wszystkie wykorzystywane formaty są zgodne z~formatami wykorzystywanymi przez program \triangle.
-
 \subsection{Wywołanie}
 Program nie prowadzi dialogu z~użytkownikiem.
 
@@ -109,7 +99,10 @@ Program nie prowadzi dialogu z~użytkownikiem.
 \end{lstlisting}
 
 Ostatni argument programu określa nazwę pliku (wraz ze ścieżką) w~którym opisany jest wielokąt.
-Następne argumenty określają opcje wykonania programu i~nie są wymagane.
+Nie podanie tego argumentu spowoduje błąd wykonania programu.
+
+Wcześniejsze argumenty określają opcje wykonania programu i~nie są wymagane.
+Kolejność argumentów nie ma znaczenia.
 
 Dostępne są następujące opcje:
 \begin{description}
@@ -128,6 +121,17 @@ W~przypadku powodzenia program zwraca zero. W~przeciwnym wypadku program zwraca 
 \end{description}
 
 Ponadto program w~czasie działania wypisuje informacje o~swoim aktualnym stanie na wyjście \texttt{STDERR}.
+
+\subsection{Pliki}
+\siatkonator korzysta z~plików w~formatach \texttt{poly}, \texttt{ele} i~\texttt{node}.
+
+\begin{description}
+  \item[poly] \href{http://www.cs.cmu.edu/~quake/triangle.poly.html}{format pliku opisującego wielokąt}
+  \item[ele] \href{http://www.cs.cmu.edu/~quake/triangle.ele.html}{format pliku opisującego z~których wierzchołków składają się trójkąty siatki}
+  \item[poly] \href{http://www.cs.cmu.edu/~quake/triangle.poly.html}{format pliku opisującego wierzchołki siatki}
+\end{description}
+
+Wszystkie wykorzystywane formaty są zgodne z~formatami wykorzystywanymi przez program \triangle.
 
 \subsection{Dodatkowe uwagi}
 Odradzam użytkownikowi podawanie programowi siatek, które przecinają się ze sobą, bądź przecinają się z~podanym wielokątem.
