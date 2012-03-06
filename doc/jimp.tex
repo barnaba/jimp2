@@ -140,25 +140,45 @@ Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypis
 
 \newpage
 \section{Specyfikacja implementacyjna}
-\subsection{Algorytm}
-\subsubsection{Działanie programu}
-\todo[noline]{szkic!}
-\begin{lstlisting}[caption=Przykładowe wywołanie]
-  wczytaj dane z~pliku poly do struktury p
+\subsection{Struktura programu}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{class.png}
+  \caption{Diagram klas}
+\end{figure}
+
+  Program podzielony jest na trzy pliki:
+  \begin{description}
+    \item[siatkonator.c] Plik zawierający główną funkcję odpowiedzialną za wczytanie argumentów i~zależnie od nich wykonanie algorytmu sklejania siatek.
+    \item[siatkonator\_IO.c] Plik zawierający funkcje związane z~czytaniem i~zapisywaniem plików \emph{node}, \emph{ele} i \emph{poly} do struktur \texttt{triangulateio}.
+    \item[mesh\_ops.c] Plik zawierający funkcje obsługujące logikę sklejania siatek (znajdowanie wielokąta otaczającego siatkę, wycinanie dziur w~siatkach i~łączenie siatek).
+    \item[common.c] Plik zawierający funkcje pomocnicze (takie jak wypisywanie wiadomości).
+  \end{description}
+
+\subsubsection{Funkcje modułu \texttt{mesh\_ops}}
+\begin{description}
+  \item[\texttt{bounding\_polygon}] funkcja przyjmująca wskaźnik na wczytaną gotową siatkę i~znajdująca otaczający ją wielokąt (który należy wyciąć z~otoczki przed przeprowadzeniem triangulacji).
+  \item[\texttt{add\_hole}] Funkcja przyjmująca wskaźnik na wczytaną otoczkę (być może już z~dziurami) i~na wielokąt otaczający jedną ze sklejanych siatek. Funkcja dodaje do otoczki dziurę w~miejscu, w~którym zostanie w~nią wklejona siatka.
+  \item[\texttt{mesh\_cat}] Funkcja przyjmująca dwa wskaźniki na siatki i~dodająca elementy drugiej siatki do elementów pierwszej siatki.
+\end{description}
+
+\subsection{Algorytmy}
+\begin{lstlisting}[caption=Pseudokod algorytmu głównej funkcji programu sklejającej siatki]
+  wczytaj dane z pliku poly do struktury p
   dla kazdego pliku .ele:
-    wczytaj dane z~plikow ele i~nodes do struktury E
-    znajdz w~strukturze E krawedzie, ktore wystepuja tylko raz
-    usun te krawedzie ze stroktury E
+    wczytaj dane z plikow ele i nodes do struktury E
+    znajdz w strukturze E krawedzie, ktore wystepuja tylko raz
+    usun te krawedzie ze struktury E
     dodaj te krawedzie do struktury P jako sekcje
     dodaj dziure do struktury P wewnatrz kazdego trojkata ze struktury E
-  wykonaj triangulacje na strukturze p
-  zapisz wynik triangulacji do plikow ele i~node
+  wykonaj triangulacje na strukturze p do siatki S
+  dla kazdego pliku .ele:
+    wstaw siatke z pliku do dziur w siatce S
+  zapisz wynik triangulacji do plikow ele i node
 \end{lstlisting}
 
-\subsubsection{Znajdowanie krawędzi, które występują tylko raz}
-\todo[noline]{szkic!}
-\todo[noline]{sortować T?}
-\begin{lstlisting}[caption=Przykładowe wywołanie]
+\begin{lstlisting}[caption=Pseudokod funkcji szukającej wielokąta otaczającego daną siatkę: \texttt{bounding\_polygon}]
   struct element {
     double lower_node_id
     double higher_node_id
@@ -168,7 +188,7 @@ Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypis
   T = element[]
 
   Dla kazdego elementu e:
-    pos~= znajdz w~T element
+    pos = znajdz w T element
     if pos:
       T[pos]->more_than_once = true
       continue
@@ -176,6 +196,21 @@ Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypis
       T[pos]->lower_node_id  = e->lower_node_id
       T[pos]->higher_node_id = e->higher_node_id
       T[pos]->more_than_once = false
+    Dla kazdego elementu e w T:
+      Jezeli e->more_than_once == true:
+        dodaj e jako punkt w danych wyjsciowych
+    barycenter = srodek ciezkosci pierwszego trojkata w T
+    dodaj dziure do danych wyjsciowych w~punkcie barycenter
 \end{lstlisting}
+
+\subsection{struktury danych}
+Struktura danych, której będę używał do komunikacji między funkcjami to struktura \texttt{triangulateio} dostarczona wraz z~programem triangle.
+Struktura ta pozwala opisać siatkę na każdym etapie jej budowania (także siatki wyjściowe).
+
+Jej wadą jest fakt, że nie jest specjalizowana do konkretnych zadań i~wiele pól nie będzie miało zastosowania.
+Mimo to jest już napisana, udokumentowana i~mogę być pewien, że zawiera wszystkie potrzebne pola.
+
+Zastosowanie innej struktury, jako struktury pośredniej wymagałoby tłumaczenia jej do \texttt{triangulateio} przed wykonaniem funkcji \texttt{triangulate()}.
+
 
 \end{document}
