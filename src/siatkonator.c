@@ -1,12 +1,9 @@
-#ifdef SINGLE
-#define REAL float
-#else /* not SINGLE */
-#define REAL double
-#endif /* not SINGLE */
 
 #include <argtable2.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#define REAL double
 #include "../vendor/triangle/triangle.h"
 
 void siatkonator_log(const char* msg){
