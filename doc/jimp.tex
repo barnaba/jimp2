@@ -179,28 +179,21 @@ Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypis
 \end{lstlisting}
 
 \begin{lstlisting}[caption=Pseudokod funkcji szukającej wielokąta otaczającego daną siatkę: \texttt{bounding\_polygon}]
-  struct element {
-    double lower_node_id
-    double higher_node_id
-    boolean more_than_once
-  }
+  H - tablica mieszajaca
 
-  T = element[]
-
-  Dla kazdego elementu e:
-    pos = znajdz w T element
-    if pos:
-      T[pos]->more_than_once = true
-      continue
+  Dla kazdego wierzcholka w:
+    jezeli H[w] istnieje:
+      Dodaj w do H
     else:
-      T[pos]->lower_node_id  = e->lower_node_id
-      T[pos]->higher_node_id = e->higher_node_id
-      T[pos]->more_than_once = false
-    Dla kazdego elementu e w T:
-      Jezeli e->more_than_once == true:
-        dodaj e jako punkt w danych wyjsciowych
-    barycenter = srodek ciezkosci pierwszego trojkata w T
-    dodaj dziure do danych wyjsciowych w~punkcie barycenter
+      Usun w z~H
+
+  Dla kazdego wierzcholka w:
+    jezeli H[w] istnieje:
+      dodaj w~do wielokata otaczajacego
+      usun w~z~wielokata otaczajacego
+
+  Dodaj dziure w~wielokacie otaczajacym w~miejscu srodka ciezkosci pierwszego elemenetu.
+
 \end{lstlisting}
 
 \subsection{struktury danych}
@@ -211,6 +204,44 @@ Jej wadą jest fakt, że nie jest specjalizowana do konkretnych zadań i~wiele p
 Mimo to jest już napisana, udokumentowana i~mogę być pewien, że zawiera wszystkie potrzebne pola.
 
 Zastosowanie innej struktury, jako struktury pośredniej wymagałoby tłumaczenia jej do \texttt{triangulateio} przed wykonaniem funkcji \texttt{triangulate()}.
+
+\subsection{Rozwiązywanie konfliktów atrybutów wierzchołków}
+Program bierze pod uwagę tylko pierwszy atrybut każdego wierzchołka.
+
+Wczytując pliki program zapamiętuje najniższy i~najwyższy atrybut wierzchołka w~danym pliku.
+Następnie program oblicza stałą, o~którą należy przesunąć atrybuty wierzchołka w~tym pliku, aby nuniknąć konfliktu.
+
+\begin{lstlisting}[caption=Przykład]
+  Jezeli w~pliku A.poly atrybuty wierzcholkow sa z~zakresu 1..10,
+  I~w~pliku B.node atrybuty sa z~zakresu 3..10,
+  To po wczytaniu A.poly najwiekszy znaleziony atrybut jest 10,
+  I~po wczytaniu B.node najmniejszy znaleziony atrybut bedzie 3,
+  Wiec nalezy wszystkie atrybuty wierzcholkow znalezionych w~B.node przesunac o~(10-3)
+\end{lstlisting}
+
+W~związku z~tym wynik działania programu \textbf{zależy} od kolejności podanych plików wejściowych.
+
+Po takim podziale pozostała przestrzeń zmiennej używana jest do rozwiązywania konfliktów wynikających z~tego, że dwa wierzchołki o~różnych atrybutach znalazły się w~tym samym miejscu.
+
+Jeśli oba wierzchołki mają taką samą wartość atrybutu, atrybut \textbf{nie zostaje} zachowany (wynika to z~faktu rozdzielenia przestrzeni atrybutów).
+
+Jeśli oba wierzchołki mają różną wartość atrybutów, zostaje im przydzielona nowa wartość z~zakresu wartości przeznaczonego na konflikty za pomocą prostej funkcji mieszającej
+(znajdowana jest największa liczba pierwsza w~dostępnym zakresie. Atrybut nowego wierzchołka to:
+
+\begin{lstlisting}[caption=]
+(Atrybut\ A + Atrybut\ B) % (liczba pierwsza) + offset zakresu
+\end{lstlisting}
+
+Takie rozwiązanie gwarantuje, że elementy będące połączeniem danych atrybutów zawsze będą miały ten sam atrybut w~pliku wynikowym.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{konflikty.png}
+  \caption{przykład podziału przestrzeni atrybutów}
+\end{figure}
+
+
+
 
 
 \end{document}
