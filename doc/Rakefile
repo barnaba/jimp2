@@ -2,7 +2,7 @@ document_name = "jimp"
 task :default => [:see]
 
 task :see => ["#{document_name}.pdf"] do
-  sh "evince #{document_name}.pdf &"
+  sh "xpdf #{document_name}.pdf &"
 end
 
 file "#{document_name}.pdf" => ["#{document_name}.tex"] do
