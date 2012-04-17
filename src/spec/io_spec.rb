@@ -31,7 +31,7 @@ describe "siatkonator IO" do
     nator.status.should == :OK
     nator.stderr.should match /reading #{poly}/i
     nator.stderr.should match /read 4 nodes/i
-    #nator.stderr.should match /#{poly}: read 4 segments/i
+    nator.stderr.should match /read 4 segments/i
   end
 
   it "should read nodes coordinates and attributes properly" do

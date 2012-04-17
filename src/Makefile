@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -I/usr/local/include -Wall -ansi -std=gnu99
 LDFLAGS = -L/usr/local/lib
 LDLIBS = -largtable2 -lm
-OBJ = mesh_ops.o siatkonator_io.o triangle.o siatkonator.o common.o node.o poly.o
+OBJ = mesh_ops.o siatkonator_io.o triangle.o siatkonator.o common.o node.o poly.o segments.o
 DEPS = mesh_ops.h siatkonator_io.h
 
 siatkonator: $(OBJ)
