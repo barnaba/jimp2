@@ -1,16 +1,17 @@
-
 #include <argtable2.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define REAL double
-#include "../vendor/triangle/triangle.h"
+#include "common.h"
+#include "siatkonator_io.h"
 
-void siatkonator_log(const char* msg){
-  fprintf( stderr, "%s\n", msg);
-}
 
 int main(int argc, char ** argv){
+
+  /*
+   * Argtable variables
+   */
+
   struct arg_lit *help = arg_lit0("h", "help", "print usage");
   struct arg_dbl *surface = arg_dbl0("a", "surface","<VALUE>", "maximum surface of the triangle");
   struct arg_dbl *angle = arg_dbl0("q", "angle","<VALUE>", "minimum angle used for triangles");
@@ -20,48 +21,62 @@ int main(int argc, char ** argv){
   struct arg_end *end = arg_end(20);
   int nerrors;
   void *argtable[] = {help, surface, angle, input_ele_files, output_ele_file, input_poly_file, end};
-  char msg[512];
 
-  if (arg_nullcheck(argtable) != 0)
+  /*
+   * TriangulateIO instances
+   */
+
+  triangulateio hull;
+  triangulateio *meshes;
+
+  /*
+   * Argument parsing
+   */
+
+  if (arg_nullcheck(argtable) != 0){
     siatkonator_log("error: insufficient memory");
+    return ARG_ERR;
+  }
 
   nerrors = arg_parse(argc,argv,argtable);
   if (nerrors > 0){
-    arg_print_errors(stdout, end, "siatkonator");
-    siatkonator_log("Error parsing command line options.");
-    return 3;
+    arg_print_errors(stderr, end, "siatkonator");
+    fprintf(stderr, "Error parsing command line options.");
+    return ARG_ERR;
   }
 
   if (help->count){
     fprintf(stderr, "usage: siatkanator ");
     arg_print_syntaxv(stderr, argtable, "\n");
-    return 0;
+    return SUCCESS;
   }
 
   if (nerrors==0){
     if (surface->count){
-      sprintf(msg, "Maximum surface: %f", surface->dval[0]);
-      siatkonator_log(msg);
+      siatkonator_log("Maximum surface: %f", surface->dval[0]);
     }
 
     if (angle->count){
-      sprintf(msg, "Minimal angle: %f", angle->dval[0]);
-      siatkonator_log(msg);
+      siatkonator_log("Minimal angle: %f", angle->dval[0]);
     }
 
     if (input_ele_files->count){
       for(int i=0; i<input_ele_files->count; i++){
-        sprintf(msg, "Using mesh defined in %s", input_ele_files->filename[i]);
-        siatkonator_log(msg);
+        siatkonator_log("Using mesh defined in %s", input_ele_files->filename[i]);
       }
     }
 
     if (output_ele_file->count){
-      sprintf(msg, "Results will be saved to %s", output_ele_file->filename[0]);
-      siatkonator_log(msg);
+      siatkonator_log("Results will be saved to %s", output_ele_file->filename[0]);
     }
   }
 
+  /*
+   * Getting input from files
+   */
 
-  return 0;
+  read_poly(input_poly_file->filename[0], &hull);
+
+
+  return SUCCESS;
 }
