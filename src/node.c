@@ -60,15 +60,14 @@ void allocate_nodes(triangulateio *input){
   assert(input->pointattributelist != NULL);
 }
 
-int read_nodes(FILE *infile, triangulateio *input, int *markers){
+int read_nodes(FILE *infile, triangulateio *input, int *markers, int *firstnode){
   char *stringptr;
   char inputline[INPUTLINESIZE];
-  int firstnode;
   int error_value = 0;
+  int vertex_id;
   REAL *current_point;
   REAL *current_attribute;
   int *current_marker;
-  char msg[MSGLEN];
   int i;
 
   for (i = 0; i < input->numberofpoints; i++) {
@@ -78,21 +77,25 @@ int read_nodes(FILE *infile, triangulateio *input, int *markers){
 
     stringptr = readline(inputline, infile, &error_value);
     if (error_value != SUCCESS) return error_value;
+    vertex_id = (int) strtol(stringptr, &stringptr, 0); 
     if (i == 0) {
-      firstnode = (int) strtol(stringptr, &stringptr, 0);
-      assert((firstnode == 0) || (firstnode == 1));
-      }
+      *firstnode = vertex_id;
+      assert((*firstnode == 0) || (*firstnode == 1));
+    } else if (vertex_id != *firstnode + i){
+      fprintf(stderr, "Error:  Vertex %d is out of order (expected %d).\n", vertex_id, *firstnode + i + 1 );
+      return FORMAT_ERR;
+    }
 
     stringptr = findfield(stringptr);
     if (*stringptr == '\0') {
-      printf("Error:  Vertex %d has no x coordinate.\n", firstnode + i);
+      fprintf(stderr, "Error:  Vertex %d has no x coordinate.\n", *firstnode + i);
       return FORMAT_ERR;
     }
     current_point[0] = (REAL) strtod(stringptr, &stringptr); //x
 
     stringptr = findfield(stringptr);
     if (*stringptr == '\0') {
-      printf("Error:  Vertex %d has no y coordinate.\n", firstnode + i);
+      fprintf(stderr, "Error:  Vertex %d has no y coordinate.\n", *firstnode + i);
       return FORMAT_ERR;
     }
     current_point[1] = (REAL) strtod(stringptr, &stringptr); //y
