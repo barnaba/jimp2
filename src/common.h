@@ -1,6 +1,6 @@
 
 #ifndef SIATKONATOR_COMMON_H
-#define SIATKONATOR_COMMON_H 
+#define SIATKONATOR_COMMON_H
 #include <stdio.h>
 
 #define REAL double
@@ -17,5 +17,7 @@
 typedef struct triangulateio triangulateio;
 #endif
 
-void siatkonator_log(const char* format, ...);
-void report(triangulateio *io, int markers, int reporttriangles, int reportneighbors, int reportsegments, int reportedges, int reportnorms);
+void siatkonator_log(const char *format, ...);
+void report(triangulateio * io, int markers, int reporttriangles,
+	    int reportneighbors, int reportsegments, int reportedges,
+	    int reportnorms);

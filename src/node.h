@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <assert.h>
 
-int read_nodes_header(FILE *input_file, triangulateio *input, int *markers);
-void allocate_nodes(triangulateio *input);
-int read_nodes(FILE *infile, triangulateio *input, int *markers, int *firstnode);
+int read_node_file(const char *filename, triangulateio * input,
+		   int *firstnode);
+int read_nodes_header(FILE * input_file, triangulateio * input,
+		      int *markers);
+void allocate_nodes(triangulateio * input);
+int read_nodes(FILE * infile, triangulateio * input, int *markers,
+	       int *firstnode);

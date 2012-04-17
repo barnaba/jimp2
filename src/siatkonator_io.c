@@ -1,11 +1,11 @@
 #include "siatkonator_io.h"
 
 
-int read_ele(const char* filename, triangulateio* input);
+int read_ele(const char *filename, triangulateio * input);
 
 
-int write_ele(const char* filename, struct triangulateio* output);
-int write_node(const char* filename, struct triangulateio* output);
+int write_ele(const char *filename, struct triangulateio *output);
+int write_node(const char *filename, struct triangulateio *output);
 
 /*
  *  Functions and structures copied from triangle with modifications.
@@ -33,14 +33,14 @@ char *findfield(char *string)
   result = string;
   /* Skip the current field.  Stop upon reaching whitespace. */
   while ((*result != '\0') && (*result != '#')
-      && (*result != ' ') && (*result != '\t')) {
+	 && (*result != ' ') && (*result != '\t')) {
     result++;
   }
   /* Now skip the whitespace and anything else that doesn't look like a */
   /*   number, a comment, or the end of a line.                         */
   while ((*result != '\0') && (*result != '#')
-      && (*result != '.') && (*result != '+') && (*result != '-')
-      && ((*result < '0') || (*result > '9'))) {
+	 && (*result != '.') && (*result != '+') && (*result != '-')
+	 && ((*result < '0') || (*result > '9'))) {
     result++;
   }
   /* Check for a comment (prefixed with `#'). */
@@ -49,6 +49,7 @@ char *findfield(char *string)
   }
   return result;
 }
+
 /*****************************************************************************/
 /*                                                                           */
 /*  readline()   Read a nonempty line from a file.                           */
@@ -58,7 +59,7 @@ char *findfield(char *string)
 /*                                                                           */
 /*****************************************************************************/
 
-char *readline(char *string, FILE *infile, int *error)
+char *readline(char *string, FILE * infile, int *error)
 {
   char *result;
 
@@ -71,12 +72,11 @@ char *readline(char *string, FILE *infile, int *error)
     /* Skip anything that doesn't look like a number, a comment, */
     /*   or the end of a line.                                   */
     while ((*result != '\0') && (*result != '#')
-           && (*result != '.') && (*result != '+') && (*result != '-')
-           && ((*result < '0') || (*result > '9'))) {
+	   && (*result != '.') && (*result != '+') && (*result != '-')
+	   && ((*result < '0') || (*result > '9'))) {
       result++;
     }
-  /* If it's a comment or end of line, read another line and try again. */
+    /* If it's a comment or end of line, read another line and try again. */
   } while ((*result == '#') || (*result == '\0'));
   return result;
 }
-
