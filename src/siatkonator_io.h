@@ -1,11 +1,14 @@
 #include "common.h"
+
+#include <stdio.h>
+#include <libgen.h>
+#include <stdlib.h>
+#include <assert.h>
 #define INPUTLINESIZE 1024
 
 //writing
 
 int read_ele(const char* filename, struct triangulateio* input);
-int read_node(const char* filename, struct triangulateio* input);
-int read_poly(const char* filename, triangulateio* input);
 
 //reading
 
