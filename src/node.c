@@ -49,6 +49,9 @@ int read_nodes_header(FILE *input_file, triangulateio *input, int *markers){
 }
 
 void allocate_nodes(triangulateio *input){
+  if (input->numberofpoints == 0)
+    return SUCCESS;
+
   input->pointlist = (REAL *) malloc(input->numberofpoints * 2 * sizeof(REAL));
   input->pointattributelist = (REAL *) malloc(input->numberofpoints *
                                           input->numberofpointattributes *
@@ -69,6 +72,9 @@ int read_nodes(FILE *infile, triangulateio *input, int *markers, int *firstnode)
   REAL *current_attribute;
   int *current_marker;
   int i;
+
+  if (input->numberofpoints == 0)
+    return SUCCESS;
 
   for (i = 0; i < input->numberofpoints; i++) {
     current_point = input->pointlist + (i * DIMENSIONS);

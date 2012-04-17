@@ -22,6 +22,9 @@ int read_segments_header(FILE *input_file, triangulateio *input, int *markers){
 }
 
 void allocate_segments(triangulateio *input){
+  if (input->numberofsegments == 0)
+    return SUCCESS;
+
   input->segmentlist = (int *) malloc(input->numberofsegments * 2 * sizeof(int));
   input->segmentmarkerlist = (int *) malloc(input->numberofsegments * sizeof(int));
 
@@ -36,6 +39,9 @@ int read_segments(FILE *infile, triangulateio *input, int markers, int firstnode
   int *current_segment;
   int *current_marker;
   int i;
+
+  if (input->numberofsegments == 0)
+    return SUCCESS;
 
   for (i = 0; i < input->numberofsegments; i++) {
     current_segment = input->segmentlist + (i * 2);
