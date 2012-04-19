@@ -34,6 +34,16 @@ int read_poly_file(const char *filename, triangulateio * input)
   if (error_value != SUCCESS)
     return error_value;
 
+  error_value = read_holes_header(polyfile, input);
+  if (error_value != SUCCESS)
+    return error_value;
+
+  allocate_holes(input);
+  error_value = read_holes(polyfile, input);
+  if (error_value != SUCCESS)
+    return error_value;
+
+
   report(input, markers, 0, 0, 1, 0, 0);
   return SUCCESS;
 }

@@ -2,3 +2,5 @@ siatkonator
 *.o
 showme
 triangle
+*~
+tags

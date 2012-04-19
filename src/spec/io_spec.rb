@@ -1,47 +1,36 @@
-require 'open3'
-class Siatkonator
-  attr_reader :stdout, :stderr, :status
-  ERRORS = {
-    :OK => 0,
-    :IO_error => 1,
-    :file_format_error => 2,
-    :command_line_error => 3
-  }
-
-  def executed_with(options)
-    @stdout, @stderr, @process_status = Open3.capture3("./siatkonator #{options}")
-    self
-  end
-
-  def status()
-    ERRORS.invert[@process_status.exitstatus]
-  end
-
-end
+require_relative 'siatkonator'
 
 describe "siatkonator IO" do
   before :all do
     system "make siatkonator"
   end
-  subject {Siatkonator.new}
 
-  it "should read poly file" do
-    poly = 'square.poly'
-    nator = subject.executed_with("spec/data/#{poly}")
-    nator.status.should == :OK
-    nator.stderr.should match /reading #{poly}/i
-    nator.stderr.should match /read 4 nodes/i
-    nator.stderr.should match /read 4 segments/i
-  end
+  context "when it reads square.poly" do
+    subject {Siatkonator.new.executed_with("spec/data/square.poly") }
 
-  it "should read nodes coordinates and attributes properly" do
-    poly = 'square.poly'
-    nator = subject.executed_with("spec/data/#{poly}")
-    nator.status.should == :OK
-    nator.stderr.should match /Point    0:  1  1   attributes  1.2/
-    nator.stderr.should match /Point    1:  1  2   attributes  2.2/
-    nator.stderr.should match /Point    2:  2  2   attributes  3.3/
-    nator.stderr.should match /Point    3:  2  1   attributes  3.14/
+    it "should read poly file" do
+      poly = 'square.poly'
+      subject.status.should == :OK
+      subject.stderr.should match /read 4 nodes/i
+      subject.stderr.should match /read 4 segments/i
+      subject.stderr.should match /read 2 holes/i
+    end
+
+    it "should read nodes coordinates and attributes properly" do
+      subject.should have_point 1, 1, 1.2
+      subject.should have_point 1, 2, 2.2
+      subject.should have_point 2, 2, 3.3
+      subject.should have_point 2, 1, 3.14
+    end
+
+    it "should read nodes segments and holes properly" do
+      subject.should have_segment 0, 1
+      subject.should have_segment 1, 2
+      subject.should have_segment 2, 3
+      subject.should have_segment 3, 0
+      subject.should have_hole 1.5, 1.5
+      subject.should have_hole 1.7, 1.2
+    end
   end
 
 end

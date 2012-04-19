@@ -6,7 +6,6 @@ int read_node_file(const char *filename, triangulateio * input,
   int error_value = 0;
   FILE *polyfile;
   int markers;
-  int firstnode;
 
   siatkonator_log("reading %s: \n", basename((char *) filename));
 
@@ -22,7 +21,7 @@ int read_node_file(const char *filename, triangulateio * input,
 
   allocate_nodes(input);
 
-  error_value = read_nodes(polyfile, input, &markers, &firstnode);
+  error_value = read_nodes(polyfile, input, &markers, firstnode);
   if (error_value != SUCCESS)
     return error_value;
 
@@ -84,7 +83,7 @@ int read_nodes_header(FILE * input_file, triangulateio * input,
 void allocate_nodes(triangulateio * input)
 {
   if (input->numberofpoints == 0)
-    return SUCCESS;
+    return;
 
   input->pointlist =
       (REAL *) malloc(input->numberofpoints * 2 * sizeof(REAL));

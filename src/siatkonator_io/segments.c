@@ -27,7 +27,7 @@ int read_segments_header(FILE * input_file, triangulateio * input,
 void allocate_segments(triangulateio * input)
 {
   if (input->numberofsegments == 0)
-    return SUCCESS;
+    return;
 
   input->segmentlist =
       (int *) malloc(input->numberofsegments * 2 * sizeof(int));

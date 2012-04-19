@@ -1,4 +1,4 @@
-document_name = "jimp"
+document_name = "javamp"
 task :default => [:see]
 
 task :see => ["#{document_name}.pdf"] do

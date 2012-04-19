@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 #include "common.h"
-#include "poly.h"
-#include "node.h"
+#include "siatkonator_io/poly.h"
+#include "siatkonator_io/node.h"
 
 
 int main(int argc, char **argv)

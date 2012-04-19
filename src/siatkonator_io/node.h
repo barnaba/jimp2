@@ -1,4 +1,4 @@
-#include "common.h"
+#include "../common.h"
 #include "siatkonator_io.h"
 #include <stdio.h>
 #include <libgen.h>

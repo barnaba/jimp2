@@ -101,5 +101,13 @@ void report(triangulateio * io, int markers, int reporttriangles,
     }
     fprintf(stderr, "\n");
   }
+
+  for (i = 0; i < io->numberofholes; i++) {
+    fprintf(stderr, "Hole %4d:", i);
+    for (j = 0; j < 2; j++) {
+      fprintf(stderr, "  %.6g", io->holelist[i * 2 + j]);
+    }
+    fprintf(stderr, "\n");
+  }
 #endif
 }
