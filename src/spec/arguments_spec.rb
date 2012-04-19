@@ -1,9 +1,7 @@
 require 'siatkonator'
 
+system "make siatkonator"
 describe "siatkonator argument reader" do
-  before :all do
-    system "make siatkonator"
-  end
   subject {Siatkonator.new}
 
   it "should require at least one option" do
