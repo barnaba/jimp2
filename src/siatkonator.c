@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "common.h"
+#include "io/siatkonator_io.h"
 #include "io/poly.h"
 #include "io/node.h"
 
@@ -97,6 +98,9 @@ int main(int argc, char **argv)
 
   if (input_ele_files->count) {
     meshes = malloc(input_ele_files->count * sizeof(triangulateio));
+    for (int i=0; i<input_ele_files->count; ++i){
+      ele_to_triangulateio(input_ele_files->filename[i], meshes + i);
+    }
   }
 
   initialize_mid(&mid);
@@ -130,6 +134,7 @@ void initialize_mid(triangulateio *mid){
   mid->segmentmarkerlist = (int *) NULL;
   mid->edgelist = (int *) NULL;             /* Needed only if -e switch used. */
   mid->edgemarkerlist = (int *) NULL;   /* Needed if -e used and -B not used. */
+  mid->numberofholes = 0;
   return;
 }
 
@@ -140,6 +145,7 @@ void initialize_vorout(triangulateio *vorout){
   vorout->pointattributelist = (REAL *) NULL;
   vorout->edgelist = (int *) NULL;          /* Needed only if -v switch used. */
   vorout->normlist = (REAL *) NULL;         /* Needed only if -v switch used. */
+  vorout->numberofholes = 0;
   return;
 }
 
@@ -150,5 +156,6 @@ void initialize_out(triangulateio *out){
   out->trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
   /* Not needed if -E switch used or number of triangle attributes is zero: */
   out->triangleattributelist = (REAL *) NULL;
+  out->numberofholes = 0;
   return;
 }
