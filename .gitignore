@@ -4,3 +4,8 @@ showme
 triangle
 *~
 tags
+*.aux
+*.log
+*.out
+*.toc
+
