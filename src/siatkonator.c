@@ -6,6 +6,10 @@
 #include "siatkonator_io/poly.h"
 #include "siatkonator_io/node.h"
 
+void initialize_mid(triangulateio *mid);
+void initialize_vorout(triangulateio *vorout);
+void initialize_out(triangulateio *out);
+
 
 int main(int argc, char **argv)
 {
@@ -38,6 +42,7 @@ int main(int argc, char **argv)
 
   triangulateio hull;
   triangulateio *meshes;
+  triangulateio mid, out, vorout;
 
   /*
    * Argument parsing
@@ -88,7 +93,62 @@ int main(int argc, char **argv)
    */
 
   read_poly_file(input_poly_file->filename[0], &hull);
+  hull.numberofregions = 0; //TODO wczytywanie regionów
 
+  if (input_ele_files->count) {
+    meshes = malloc(input_ele_files->count * sizeof(triangulateio));
+  }
+
+  initialize_mid(&mid);
+  initialize_vorout(&vorout);
+  initialize_out(&out);
+
+  triangulate("pczAevn", &hull, &mid, &vorout); //TODO wziąć pod uwagę opcje podane przez usera
+  mid.trianglearealist = (REAL *) malloc(mid.numberoftriangles * sizeof(REAL));
+  mid.trianglearealist[0] = 3.0;
+  mid.trianglearealist[1] = 1.0;
+  triangulate("prazBP", &mid, &out, (struct triangulateio *) NULL);
+  siatkonator_log("triangulation result:\n");
+  report(&out, 0, 1, 0, 0, 0, 0);
 
   return SUCCESS;
+}
+
+void initialize_mid(triangulateio *mid){
+  /*copy from tricall*/
+  mid->pointlist = (REAL *) NULL;            /* Not needed if -N switch used. */
+  /* Not needed if -N switch used or number of point attributes is zero: */
+  mid->pointattributelist = (REAL *) NULL;
+  mid->pointmarkerlist = (int *) NULL; /* Not needed if -N or -B switch used. */
+  mid->trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
+  /* Not needed if -E switch used or number of triangle attributes is zero: */
+  mid->triangleattributelist = (REAL *) NULL;
+  mid->neighborlist = (int *) NULL;         /* Needed only if -n switch used. */
+  /* Needed only if segments are output (-p or -c) and -P not used: */
+  mid->segmentlist = (int *) NULL;
+  /* Needed only if segments are output (-p or -c) and -P and -B not used: */
+  mid->segmentmarkerlist = (int *) NULL;
+  mid->edgelist = (int *) NULL;             /* Needed only if -e switch used. */
+  mid->edgemarkerlist = (int *) NULL;   /* Needed if -e used and -B not used. */
+  return;
+}
+
+void initialize_vorout(triangulateio *vorout){
+  /*copy from tricall*/
+  vorout->pointlist = (REAL *) NULL;        /* Needed only if -v switch used. */
+  /* Needed only if -v switch used and number of attributes is not zero: */
+  vorout->pointattributelist = (REAL *) NULL;
+  vorout->edgelist = (int *) NULL;          /* Needed only if -v switch used. */
+  vorout->normlist = (REAL *) NULL;         /* Needed only if -v switch used. */
+  return;
+}
+
+void initialize_out(triangulateio *out){
+  out->pointlist = (REAL *) NULL;            /* Not needed if -N switch used. */
+  /* Not needed if -N switch used or number of attributes is zero: */
+  out->pointattributelist = (REAL *) NULL;
+  out->trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
+  /* Not needed if -E switch used or number of triangle attributes is zero: */
+  out->triangleattributelist = (REAL *) NULL;
+  return;
 }

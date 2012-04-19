@@ -11,7 +11,7 @@ describe "siatkonator argument reader" do
   end
 
   it "should be ok when option given" do
-    nator = subject.executed_with("option")
+    nator = subject.executed_with("spec/data/square.poly")
     nator.status.should == :OK
   end
 
@@ -21,19 +21,19 @@ describe "siatkonator argument reader" do
   end
 
   it "should notify that max surface was set" do
-    nator = subject.executed_with("-a 35 test")
+    nator = subject.executed_with("-a 35 spec/data/square.poly")
     nator.status.should == :OK
     nator.stderr.should match /surface.*35/i
   end
 
   it "should notify that min angle was set" do
-    nator = subject.executed_with("-q 20 test")
+    nator = subject.executed_with("-q 20 spec/data/square.poly")
     nator.status.should == :OK
     nator.stderr.should match /Angle.*20/i
   end
 
   it "should notify that mesh files were provided" do
-    nator = subject.executed_with("-e test.ele -e trele.ele -e morele.ele test")
+    nator = subject.executed_with("-e test.ele -e trele.ele -e morele.ele spec/data/square.poly")
     nator.status.should == :OK
     nator.stderr.should match /test\.ele/i
     nator.stderr.should match /trele\.ele/i
@@ -41,7 +41,7 @@ describe "siatkonator argument reader" do
   end
 
   it "should notify that output file was set" do
-    nator = subject.executed_with("-o out.ele test")
+    nator = subject.executed_with("-o out.ele spec/data/square.poly")
     nator.status.should == :OK
     nator.stderr.should match /saved.*out.ele/i
   end
