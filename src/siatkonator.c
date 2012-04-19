@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 #include "common.h"
-#include "siatkonator_io/poly.h"
-#include "siatkonator_io/node.h"
+#include "io/poly.h"
+#include "io/node.h"
 
 void initialize_mid(triangulateio *mid);
 void initialize_vorout(triangulateio *vorout);

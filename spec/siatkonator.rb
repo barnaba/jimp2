@@ -10,7 +10,8 @@ class Siatkonator
   }
 
   def executed_with(options)
-    @stdout, @stderr, @process_status = Open3.capture3("./siatkonator #{options}")
+    bin = File.dirname(__FILE__) + "/../bin/siatkonator"
+    @stdout, @stderr, @process_status = Open3.capture3("#{bin} #{options}")
     self
   end
 
