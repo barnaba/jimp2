@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I/usr/local/include -Wall -ansi -std=gnu99 -DDEBUG
+CFLAGS = -I/usr/local/include -Wall -ansi -std=gnu99 -DVERBOSE
 LDFLAGS = -L/usr/local/lib
 LDLIBS = -largtable2 -lm
 ODIR = obj

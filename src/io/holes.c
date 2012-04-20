@@ -53,7 +53,7 @@ int read_holes(FILE *input_file, triangulateio *input){
     }
   }
 
-  siatkonator_log("read %d holes\n", i);
+  siatkonator_log(DEBUG, "read %d holes\n", i);
 
   return 0;
 }

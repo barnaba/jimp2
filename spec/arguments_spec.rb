@@ -33,11 +33,10 @@ describe "siatkonator argument reader" do
   end
 
   it "should notify that mesh files were provided" do
-    nator = subject.executed_with("-e test.ele -e trele.ele -e morele.ele spec/data/square.poly")
+    nator = subject.executed_with("-e spec/data/1.ele -e spec/data/2.ele spec/data/square-firstnode-1.poly")
     nator.status.should == :OK
-    nator.stderr.should match /test\.ele/i
-    nator.stderr.should match /trele\.ele/i
-    nator.stderr.should match /morele\.ele/i
+    nator.stderr.should match /2\.ele/i
+    nator.stderr.should match /1\.ele/i
   end
 
   it "should notify that output file was set" do

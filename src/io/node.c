@@ -7,7 +7,7 @@ int read_node_file(const char *filename, triangulateio * input,
   FILE *polyfile;
   int markers;
 
-  siatkonator_log("reading %s: \n", basename((char *) filename));
+  siatkonator_log(DEBUG, "reading %s: \n", basename((char *) filename));
 
   polyfile = fopen(filename, "r");
   if (polyfile == (FILE *) NULL) {
@@ -174,7 +174,7 @@ int read_nodes(FILE * infile, triangulateio * input, int *markers,
 
   }
 
-  siatkonator_log("read %d nodes\n", i);
+  siatkonator_log(DEBUG, "read %d nodes\n", i);
 
   return 0;
 }

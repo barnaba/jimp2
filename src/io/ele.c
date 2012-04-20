@@ -82,7 +82,7 @@ int read_elements(FILE * ele_file, triangulateio *input, int firstnode){
     if (error_value != SUCCESS)
       return error_value;
     triangle_id = (int) strtol(stringptr, &stringptr, 0);
-    if (triangle_id != firstnode + i) {
+    if (triangle_id != i + firstnode) {
       fprintf(stderr,
 	      "Error:  triangle %d is out of order (expected %d).\n",
 	      triangle_id, firstnode + i + 1);
@@ -96,7 +96,7 @@ int read_elements(FILE * ele_file, triangulateio *input, int firstnode){
           firstnode + i);
         return FORMAT_ERR;
       }
-      current_triangle[thrice] = (REAL) strtol(stringptr, &stringptr, 0);
+      current_triangle[thrice] = (REAL) strtol(stringptr, &stringptr, 0) - firstnode;
     }
 
     /* Read the triangle attributes. */
@@ -111,7 +111,7 @@ int read_elements(FILE * ele_file, triangulateio *input, int firstnode){
 
   }
 
-  siatkonator_log("read %d triangles \n", i);
+  siatkonator_log(DEBUG, "read %d triangles \n", i);
 
   return 0;
 }

@@ -13,7 +13,7 @@ int replace_ele_with_node(char *node_filename, const char * ele_filename){
   /* We use INPUTLINESIZE - 1 here, because .node suffix is one char longer */
   /* than .ele suffix*/
   if (len > INPUTLINESIZE - 1){
-    siatkonator_log("filename too long: %s\n", node_filename);
+    siatkonator_log(INFO, "filename too long: %s\n", node_filename);
     return ARG_ERR;
   }
 
@@ -29,18 +29,20 @@ int ele_to_triangulateio(const char *ele_filename, triangulateio *input){
   int firstnode = 0;
   char node_filename[INPUTLINESIZE];
 
-  siatkonator_log("reading node file: %s\n", node_filename);
   error_value = replace_ele_with_node(node_filename, ele_filename);
+  siatkonator_log(INFO, "reading node file: %s\n", node_filename);
   if (error_value != SUCCESS)
     return error_value;
   error_value = read_node_file(node_filename, input, &firstnode);
   if (error_value != SUCCESS)
     return error_value;
 
-  siatkonator_log("reading ele file: %s\n", ele_filename);
+  siatkonator_log(INFO, "reading ele file: %s\n", ele_filename);
   error_value = read_ele_file(ele_filename, input, firstnode);
   if (error_value != SUCCESS)
     return error_value;
+
+  input->numberofcorners = 3;
   
   return SUCCESS;
 }

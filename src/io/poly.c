@@ -6,8 +6,6 @@ int read_poly_file(const char *filename, triangulateio * input)
   int markers;
   int firstnode;
 
-  siatkonator_log("reading %s: \n", basename((char *) filename));
-
   polyfile = fopen(filename, "r");
   if (polyfile == (FILE *) NULL) {
     printf("  Error:  Cannot access file %s.\n", filename);

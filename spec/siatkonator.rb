@@ -1,7 +1,7 @@
 require 'open3'
 
 class Siatkonator
-  attr_reader :stdout, :stderr, :status
+  attr_reader :stdout, :stderr, :status, :current
   ERRORS = {
     :OK => 0,
     :IO_error => 1,
@@ -12,6 +12,8 @@ class Siatkonator
   def executed_with(options)
     bin = File.dirname(__FILE__) + "/../bin/siatkonator"
     @stdout, @stderr, @process_status = Open3.capture3("#{bin} #{options}")
+    @current = @stdout.split("\n") + @stderr.split("\n")
+    puts "executing: #{bin} #{options}"
     self
   end
 
@@ -20,15 +22,28 @@ class Siatkonator
   end
 
   def has_point?(x, y, *attributes)
-    @stderr =~ /Point\s+\d+:\s*#{x}\s*#{y}\s*attributes\s*#{attributes.join("\s*")}/ 
+    matching? /Point\s+\d+:\s*#{x}\s*#{y}\s*#{attributes.empty? ? "" : "attributes"}\s*#{attributes.join("\s*")}/ 
   end
 
   def has_segment?(a, b)
-    @stderr =~ /Segment\s+\d+\s*points:\s*#{a}\s*#{b}/ 
+    matching? /Segment\s+\d+\s*points:\s*#{a}\s*#{b}/ 
   end
 
   def has_hole?(x, y)
-    @stderr =~ /Hole\s*\d+:\s*#{x}\s*#{y}/ 
+    matching? /Hole\s*\d+:\s*#{x}\s*#{y}/ 
+  end
+
+  def has_triangle?(n1, n2, n3)
+    matching? /Triangle\s+\d+\s+points:\s+#{n1}\s+#{n2}\s+#{n3}/ 
+  end
+
+  def set_section!(start, stop=/--------/)
+    start = Regexp.new("\\*\\*\\*.*" + start.source)
+    @current = @current.drop_while { |line| not line =~ start }.take_while {|line| not line =~ stop}
+  end
+
+  def matching?(regex)
+    not @current.select { |line| line =~ regex }.empty?
   end
 
 end

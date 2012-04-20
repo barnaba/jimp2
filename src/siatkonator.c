@@ -36,6 +36,7 @@ int main(int argc, char **argv)
       { help, surface, angle, input_ele_files, output_ele_file,
     input_poly_file, end
   };
+  int error_value = 0;
 
   /*
    * TriangulateIO instances
@@ -50,7 +51,7 @@ int main(int argc, char **argv)
    */
 
   if (arg_nullcheck(argtable) != 0) {
-    siatkonator_log("error: insufficient memory");
+    siatkonator_log(INFO, "error: insufficient memory");
     return ARG_ERR;
   }
 
@@ -69,22 +70,15 @@ int main(int argc, char **argv)
 
   if (nerrors == 0) {
     if (surface->count) {
-      siatkonator_log("Maximum surface: %f", surface->dval[0]);
+      siatkonator_log(INFO, "Maximum surface: %f", surface->dval[0]);
     }
 
     if (angle->count) {
-      siatkonator_log("Minimal angle: %f", angle->dval[0]);
-    }
-
-    if (input_ele_files->count) {
-      for (int i = 0; i < input_ele_files->count; i++) {
-	siatkonator_log("Using mesh defined in %s",
-			input_ele_files->filename[i]);
-      }
+      siatkonator_log(INFO, "Minimal angle: %f", angle->dval[0]);
     }
 
     if (output_ele_file->count) {
-      siatkonator_log("Results will be saved to %s",
+      siatkonator_log(INFO, "Results will be saved to %s",
 		      output_ele_file->filename[0]);
     }
   }
@@ -93,13 +87,25 @@ int main(int argc, char **argv)
    * Getting input from files
    */
 
-  read_poly_file(input_poly_file->filename[0], &hull);
+  siatkonator_log(INFO, "*** reading hull: %s\n", input_poly_file->filename[0]);
+  error_value = read_poly_file(input_poly_file->filename[0], &hull);
+  if (error_value != SUCCESS)
+    return error_value;
+  siatkonator_log(DEBUG, "--------\n");
+
   hull.numberofregions = 0; //TODO wczytywanie regionów
 
   if (input_ele_files->count) {
     meshes = malloc(input_ele_files->count * sizeof(triangulateio));
     for (int i=0; i<input_ele_files->count; ++i){
-      ele_to_triangulateio(input_ele_files->filename[i], meshes + i);
+      siatkonator_log(INFO, "*** reading %s\n", input_ele_files->filename[i]);
+      error_value = ele_to_triangulateio(input_ele_files->filename[i], meshes + i);
+      if (error_value != SUCCESS)
+        return error_value;
+      siatkonator_log(DEBUG, "--------\n");
+      siatkonator_log(DEBUG, "*** result of reading %s\n", input_ele_files->filename[i]);
+      report(meshes + i, 0, 1, 0, 0, 0, 0);
+      siatkonator_log(DEBUG, "--------\n");
     }
   }
 
@@ -112,8 +118,9 @@ int main(int argc, char **argv)
   mid.trianglearealist[0] = 3.0;
   mid.trianglearealist[1] = 1.0;
   triangulate("prazBP", &mid, &out, (struct triangulateio *) NULL);
-  siatkonator_log("triangulation result:\n");
+  siatkonator_log(DEBUG, "*** triangulation result:\n");
   report(&out, 0, 1, 0, 0, 0, 0);
+  siatkonator_log(DEBUG, "--------\n");
 
   return SUCCESS;
 }

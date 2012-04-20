@@ -86,7 +86,7 @@ int read_segments(FILE * infile, triangulateio * input, int markers,
     }
   }
 
-  siatkonator_log("read %d segments\n", i);
+  siatkonator_log(DEBUG, "read %d segments\n", i);
 
   return 0;
 }
