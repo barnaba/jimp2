@@ -77,19 +77,18 @@ describe "siatkonator IO" do
     it "should read 1.ele and 1.node properly" do
       subject.set_section! %r{result of reading spec/data/1.ele}
       subject.should have_triangle 0, 1, 2
-      puts subject.current.inspect
       subject.should have_point 1.1, 1.1
       subject.should have_point 1.3, 1.1
       subject.should have_point 1.1, 1.3
     end
 
-    #it "should read 2.ele and 2.node properly" do
-      #subject.set_section! %r{result of reading spec/data/2.ele}
-      #subject.should have_triangle 0, 1, 2
-      #subject.should have_point 1.5, 1.5
-      #subject.should have_point 1.8, 1.5
-      #subject.should have_point 1.5, 1.8
-    #end
+    it "should read 2.ele and 2.node properly" do
+      subject.set_section! %r{result of reading spec/data/2.ele}
+      subject.should have_triangle 0, 1, 2
+      subject.should have_point 1.5, 1.5
+      subject.should have_point 1.8, 1.5
+      subject.should have_point 1.5, 1.8
+    end
 
   end
 
