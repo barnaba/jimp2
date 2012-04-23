@@ -90,10 +90,10 @@ void allocate_nodes(triangulateio * input)
   input->pointattributelist =
       (REAL *) malloc(input->numberofpoints *
 		      input->numberofpointattributes * sizeof(REAL));
-  input->pointmarkerlist =
-      (int *) malloc(input->numberofpoints * sizeof(int));
+  input->pointmarkerlist = (int *) malloc(input->numberofpoints * sizeof(int));
 
-  assert(input->pointmarkerlist != NULL);
+
+  assert( input->pointmarkerlist != NULL);
   assert(input->pointattributelist != NULL);
 }
 
@@ -162,19 +162,41 @@ int read_nodes(FILE * infile, triangulateio * input, int *markers,
       /* Read a vertex marker. */
       stringptr = findfield(stringptr);
       if (*stringptr == '\0') {
-	*current_marker = 0;
+        *current_marker = 0;
       } else {
-	*current_marker = (int) strtol(stringptr, &stringptr, 0);
+        *current_marker = (int) strtol(stringptr, &stringptr, 0);
       }
     } else {
       /* If no markers are specified in the file, they default to zero. */
       *current_marker = 0;
     }
-    /* Determine the smallest and largest x and y coordinates. */
 
+  }
+
+  if (markers == 0){
+    input->pointmarkerlist = NULL;
   }
 
   siatkonator_log(DEBUG, "read %d nodes\n", i);
 
   return 0;
+}
+
+int write_node(FILE *file, struct triangulateio *output){
+  int i,j;
+  int markers = output->pointmarkerlist == NULL ? 0 : 1;
+  REAL * current_attribute = output->pointattributelist;
+  fprintf(file, "%d %d %d %d\n", output->numberofpoints, DIMENSIONS, output->numberofpointattributes, markers);
+  for (i=0; i < output->numberofpoints; ++i){
+    fprintf(file, "%d %f %f ", i, output->pointlist[i*2], output->pointlist[i*2]+1);
+    for (j=0; j < output->numberofpointattributes; ++j){
+      fprintf(file, "%f ", *current_attribute);
+      current_attribute++;
+    }
+    if (markers){
+      fprintf(file, "%d", output->pointmarkerlist[i]);
+    }
+    fprintf(file, "\n");
+  }
+  return i;
 }

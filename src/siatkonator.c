@@ -6,10 +6,14 @@
 #include "io/siatkonator_io.h"
 #include "io/poly.h"
 #include "io/node.h"
+#include "io/ele.h"
+
+#define MAXFILENAMELEN 500
 
 void initialize_mid(triangulateio *mid);
 void initialize_vorout(triangulateio *vorout);
 void initialize_out(triangulateio *out);
+FILE * open_for_writing(struct arg_file *output_file, const char * extension);
 
 
 int main(int argc, char **argv)
@@ -28,15 +32,16 @@ int main(int argc, char **argv)
       arg_filen("e", "elements", "<.ELE FILE>", 0, argc, "input meshes");
   struct arg_file *input_poly_file =
       arg_file1(NULL, NULL, "<.POLY FILE>", "input polygon");
-  struct arg_file *output_ele_file =
+  struct arg_file *output_file =
       arg_file0("o", "output", "<.ELE FILE>", "output file");
   struct arg_end *end = arg_end(20);
   int nerrors;
   void *argtable[] =
-      { help, surface, angle, input_ele_files, output_ele_file,
+      { help, surface, angle, input_ele_files, output_file,
     input_poly_file, end
   };
   int error_value = 0;
+  FILE *ele_out, *node_out;
 
   /*
    * TriangulateIO instances
@@ -77,10 +82,11 @@ int main(int argc, char **argv)
       siatkonator_log(INFO, "Minimal angle: %f", angle->dval[0]);
     }
 
-    if (output_ele_file->count) {
-      siatkonator_log(INFO, "Results will be saved to %s",
-		      output_ele_file->filename[0]);
+    if (output_file->count) {
+      siatkonator_log(INFO, "Results will be saved to %s.ele and %s.node",
+		      output_file->filename[0], output_file->filename[0]);
     }
+
   }
 
   /*
@@ -104,7 +110,7 @@ int main(int argc, char **argv)
         return error_value;
       siatkonator_log(DEBUG, "--------\n");
       siatkonator_log(DEBUG, "*** result of reading %s\n", input_ele_files->filename[i]);
-      report(meshes + i, 0, 1, 0, 0, 0, 0);
+      report(meshes + i, 1, 1, 0, 0, 0, 0);
       siatkonator_log(DEBUG, "--------\n");
     }
   }
@@ -119,8 +125,24 @@ int main(int argc, char **argv)
   mid.trianglearealist[1] = 1.0;
   triangulate("prazBP", &mid, &out, (struct triangulateio *) NULL);
   siatkonator_log(DEBUG, "*** triangulation result:\n");
-  report(&out, 0, 1, 0, 0, 0, 0);
+  report(&out, 1, 1, 0, 0, 0, 0);
   siatkonator_log(DEBUG, "--------\n");
+
+  /*
+   * write the results
+   */
+
+  node_out = open_for_writing(output_file, ".node");
+  write_node(node_out, &mid);
+  if (node_out != stdout){
+    fclose(node_out);
+  }
+
+  ele_out  = open_for_writing(output_file, ".ele");
+  write_ele(ele_out, &mid);
+  if (ele_out != stdout){
+    fclose(ele_out);
+  }
 
   return SUCCESS;
 }
@@ -166,3 +188,27 @@ void initialize_out(triangulateio *out){
   out->numberofholes = 0;
   return;
 }
+
+FILE * open_for_writing(struct arg_file *output_file, const char * extension){
+  FILE * file;
+  char *filename = "";
+  char buffer[MAXFILENAMELEN] = "";
+  if (output_file->count) {
+    filename = strncat(buffer, output_file->filename[0], MAXFILENAMELEN - strlen(extension) - 1);
+    filename = strcat(filename, extension);
+    file = fopen(filename, "w");
+    if (file == NULL){
+      siatkonator_log(INFO, "%s: Can't open %s for writing, falling back to stdout!\n", extension, filename);
+      file = stdout;
+    }
+    siatkonator_log(INFO, "%s: Results will be saved to %s\n", extension, filename);
+  } else {
+    file = stdout;
+    siatkonator_log(INFO, "%s: Results will be printed to stdout;\n", extension, filename);
+  }
+  return file;
+}
+
+
+
+

@@ -8,15 +8,8 @@
 
 int ele_to_triangulateio(const char *ele_filename, triangulateio *input);
 
-//writing
-
 int read_ele(const char* filename, struct triangulateio* input);
 int read_node(const char* filename, struct triangulateio* input);
-
-//reading
-
-int write_ele(const char* filename, struct triangulateio* output);
-int write_node(const char* filename, struct triangulateio* output);
 
 //utility functions
 

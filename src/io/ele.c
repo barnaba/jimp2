@@ -53,7 +53,7 @@ void allocate_elements(triangulateio *input){
     return;
 
   input->trianglelist =
-      (int *) malloc(input->numberoftriangles * 3 * sizeof(int));
+      (int *) malloc(input->numberoftriangles * NODES_PER_TRIANGLE * sizeof(int));
   input->triangleattributelist =
       (REAL *) malloc(input->numberoftriangleattributes * sizeof(REAL));
 
@@ -114,4 +114,31 @@ int read_elements(FILE * ele_file, triangulateio *input, int firstnode){
   siatkonator_log(DEBUG, "read %d triangles \n", i);
 
   return 0;
+}
+
+int write_ele(FILE *file, struct triangulateio* output){
+  int i,j;
+  int *current_node = output->trianglelist;
+  REAL *current_attribute= output->triangleattributelist;
+
+  // header 
+  fprintf(file, "%d %d %d\n", output->numberoftriangles, NODES_PER_TRIANGLE, output->numberoftriangleattributes);
+
+  for (i=0; i < output->numberoftriangles; ++i){
+    fprintf(file, "%d ", i);
+
+    //nodes
+    for (j=0; j < NODES_PER_TRIANGLE; ++j){
+      fprintf(file, "%d ", *current_node);
+      current_node++;
+    }
+
+    //triangle attributes
+    for (j=0; j < output->numberoftriangleattributes; ++j){
+      fprintf(file, "%g ", *current_attribute);
+      current_attribute++;
+    }
+    fprintf(file, "\n");
+  }
+  return i;
 }

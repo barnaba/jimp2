@@ -47,9 +47,6 @@ int ele_to_triangulateio(const char *ele_filename, triangulateio *input){
   return SUCCESS;
 }
 
-int write_ele(const char* filename, struct triangulateio* output);
-int write_node(const char* filename, struct triangulateio* output);
-
 /*
  *  Functions and structures copied from triangle with modifications.
  *  (not available when compiled as library, not available as functions

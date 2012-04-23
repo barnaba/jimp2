@@ -42,6 +42,6 @@ int read_poly_file(const char *filename, triangulateio * input)
     return error_value;
 
 
-  report(input, markers, 0, 0, 1, 0, 0);
+  report(input, 1, 0, 0, 1, 0, 0);
   return SUCCESS;
 }
