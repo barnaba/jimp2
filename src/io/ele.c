@@ -43,7 +43,7 @@ int read_elements_header(FILE * ele_file, triangulateio *input){
   } else {
     input->numberoftriangleattributes = (int) strtol(stringptr, &stringptr, 0);
   }
-
+  printf("TRIANGLES: %d, attrs: %d",input->numberoftriangles,input->numberoftriangleattributes);
   return SUCCESS;
 
 }
@@ -55,7 +55,7 @@ void allocate_elements(triangulateio *input){
   input->trianglelist =
       (int *) malloc(input->numberoftriangles * NODES_PER_TRIANGLE * sizeof(int));
   input->triangleattributelist =
-      (REAL *) malloc(input->numberoftriangleattributes * sizeof(REAL));
+      (REAL *) malloc(input->numberoftriangles * input->numberoftriangleattributes * sizeof(REAL));
 
   assert(input->trianglelist != NULL);
   assert(input->triangleattributelist != NULL);
@@ -76,7 +76,7 @@ int read_elements(FILE * ele_file, triangulateio *input, int firstnode){
   for (i = 0; i < input->numberoftriangles; i++) {
     current_triangle = input->trianglelist + (i * 3);
     current_attribute =
-	input->triangleattributelist + (i * input->numberoftriangles);
+	input->triangleattributelist + (i * input->numberoftriangleattributes );
 
     stringptr = readline(inputline, ele_file, &error_value);
     if (error_value != SUCCESS)

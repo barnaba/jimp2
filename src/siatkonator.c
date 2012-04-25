@@ -7,12 +7,11 @@
 #include "io/poly.h"
 #include "io/node.h"
 #include "io/ele.h"
+#include "mesh_ops.h"
 
 #define MAXFILENAMELEN 500
 
-void initialize_mid(triangulateio *mid);
-void initialize_vorout(triangulateio *vorout);
-void initialize_out(triangulateio *out);
+void initialize_triangulatio(triangulateio *mid);
 FILE * open_for_writing(struct arg_file *output_file, const char * extension);
 
 
@@ -49,6 +48,7 @@ int main(int argc, char **argv)
 
   triangulateio hull;
   triangulateio *meshes;
+  triangulateio *bounds;
   triangulateio mid, out, vorout;
 
   /*
@@ -103,29 +103,36 @@ int main(int argc, char **argv)
 
   if (input_ele_files->count) {
     meshes = malloc(input_ele_files->count * sizeof(triangulateio));
+    bounds = malloc(input_ele_files->count * sizeof(triangulateio));
+
     for (int i=0; i<input_ele_files->count; ++i){
+
       siatkonator_log(INFO, "*** reading %s\n", input_ele_files->filename[i]);
+
       error_value = ele_to_triangulateio(input_ele_files->filename[i], meshes + i);
       if (error_value != SUCCESS)
         return error_value;
+
       siatkonator_log(DEBUG, "--------\n");
       siatkonator_log(DEBUG, "*** result of reading %s\n", input_ele_files->filename[i]);
       report(meshes + i, 1, 1, 0, 0, 0, 0);
       siatkonator_log(DEBUG, "--------\n");
+
+      siatkonator_log(DEBUG, "*** generating bounding polygon from %s\n", input_ele_files->filename[i]);
+      bounding_polygon(bounds + i, meshes + i);
+      /*report(bounds + i, 0, 0, 0, 1, 0, 0);*/
+      /*siatkonator_log(DEBUG, "--------\n");*/
+      /*add_hole(&hull, bounds + i);*/
     }
   }
 
-  initialize_mid(&mid);
-  initialize_vorout(&vorout);
-  initialize_out(&out);
+  initialize_triangulatio(&mid);
+  initialize_triangulatio(&vorout);
+  initialize_triangulatio(&out);
 
-  triangulate("pczAevn", &hull, &mid, &vorout); //TODO wziąć pod uwagę opcje podane przez usera
-  mid.trianglearealist = (REAL *) malloc(mid.numberoftriangles * sizeof(REAL));
-  mid.trianglearealist[0] = 3.0;
-  mid.trianglearealist[1] = 1.0;
-  triangulate("prazBP", &mid, &out, (struct triangulateio *) NULL);
+  triangulate("p", &hull, &out, &vorout); //TODO wziąć pod uwagę opcje podane przez usera
   siatkonator_log(DEBUG, "*** triangulation result:\n");
-  report(&out, 1, 1, 0, 0, 0, 0);
+  report(&out, 0, 1, 0, 0, 0, 0);
   siatkonator_log(DEBUG, "--------\n");
 
   /*
@@ -133,13 +140,13 @@ int main(int argc, char **argv)
    */
 
   node_out = open_for_writing(output_file, ".node");
-  write_node(node_out, &mid);
+  write_node(node_out, &out);
   if (node_out != stdout){
     fclose(node_out);
   }
 
   ele_out  = open_for_writing(output_file, ".ele");
-  write_ele(ele_out, &mid);
+  write_ele(ele_out, &out);
   if (ele_out != stdout){
     fclose(ele_out);
   }
@@ -147,45 +154,21 @@ int main(int argc, char **argv)
   return SUCCESS;
 }
 
-void initialize_mid(triangulateio *mid){
-  /*copy from tricall*/
-  mid->pointlist = (REAL *) NULL;            /* Not needed if -N switch used. */
-  /* Not needed if -N switch used or number of point attributes is zero: */
+void initialize_triangulatio(triangulateio *mid){
+  mid->pointlist = (REAL *) NULL;
   mid->pointattributelist = (REAL *) NULL;
-  mid->pointmarkerlist = (int *) NULL; /* Not needed if -N or -B switch used. */
-  mid->trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
-  /* Not needed if -E switch used or number of triangle attributes is zero: */
+  mid->pointmarkerlist = (int *) NULL;
+  mid->trianglelist = (int *) NULL;
   mid->triangleattributelist = (REAL *) NULL;
-  mid->neighborlist = (int *) NULL;         /* Needed only if -n switch used. */
-  /* Needed only if segments are output (-p or -c) and -P not used: */
-  mid->segmentlist = (int *) NULL;
-  /* Needed only if segments are output (-p or -c) and -P and -B not used: */
-  mid->segmentmarkerlist = (int *) NULL;
-  mid->edgelist = (int *) NULL;             /* Needed only if -e switch used. */
-  mid->edgemarkerlist = (int *) NULL;   /* Needed if -e used and -B not used. */
-  mid->numberofholes = 0;
-  return;
-}
-
-void initialize_vorout(triangulateio *vorout){
-  /*copy from tricall*/
-  vorout->pointlist = (REAL *) NULL;        /* Needed only if -v switch used. */
-  /* Needed only if -v switch used and number of attributes is not zero: */
-  vorout->pointattributelist = (REAL *) NULL;
-  vorout->edgelist = (int *) NULL;          /* Needed only if -v switch used. */
-  vorout->normlist = (REAL *) NULL;         /* Needed only if -v switch used. */
-  vorout->numberofholes = 0;
-  return;
-}
-
-void initialize_out(triangulateio *out){
-  out->pointlist = (REAL *) NULL;            /* Not needed if -N switch used. */
-  /* Not needed if -N switch used or number of attributes is zero: */
-  out->pointattributelist = (REAL *) NULL;
-  out->trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
-  /* Not needed if -E switch used or number of triangle attributes is zero: */
-  out->triangleattributelist = (REAL *) NULL;
-  out->numberofholes = 0;
+  mid->trianglearealist = (REAL *) NULL;
+  mid->neighborlist = (int  *) NULL;
+  mid->segmentlist = (int  *) NULL;
+  mid->segmentmarkerlist = (int  *) NULL;
+  mid->holelist = (REAL *) NULL;
+  mid->regionlist = (REAL *) NULL;
+  mid->edgelist = (int  *) NULL;
+  mid->edgemarkerlist = (int  *) NULL;
+  mid->normlist = (REAL *) NULL;
   return;
 }
 

@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I/usr/local/include -Wall -ansi -std=gnu99 -DVERBOSE
+CFLAGS = -I/usr/local/include -Wall -ansi -std=gnu99 -DVERBOSE -g
 LDFLAGS = -L/usr/local/lib
 LDLIBS = -largtable2 -lm
 ODIR = obj
@@ -15,6 +15,7 @@ ORIG_OBJ = mesh_ops.o \
 			segments.o \
 			holes.o \
 			ele.o \
+			siatkonator_hash.o
 
 OBJ = $(patsubst %,$(ODIR)/%,$(ORIG_OBJ))
 HEADERS = $(wildcard src/*.h src/io/*.h)
