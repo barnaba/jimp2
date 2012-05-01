@@ -43,7 +43,6 @@ int read_elements_header(FILE * ele_file, triangulateio *input){
   } else {
     input->numberoftriangleattributes = (int) strtol(stringptr, &stringptr, 0);
   }
-  printf("TRIANGLES: %d, attrs: %d",input->numberoftriangles,input->numberoftriangleattributes);
   return SUCCESS;
 
 }

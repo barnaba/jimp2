@@ -11,7 +11,7 @@
 
 #define MAXFILENAMELEN 500
 
-void initialize_triangulatio(triangulateio *mid);
+void initialize_triangulateio(triangulateio *mid);
 FILE * open_for_writing(struct arg_file *output_file, const char * extension);
 
 
@@ -106,12 +106,15 @@ int main(int argc, char **argv)
     bounds = malloc(input_ele_files->count * sizeof(triangulateio));
 
     for (int i=0; i<input_ele_files->count; ++i){
+      initialize_triangulateio(meshes +i );
+      initialize_triangulateio(bounds +i );
 
       siatkonator_log(INFO, "*** reading %s\n", input_ele_files->filename[i]);
 
       error_value = ele_to_triangulateio(input_ele_files->filename[i], meshes + i);
+
       if (error_value != SUCCESS)
-        return error_value;
+        goto fail;
 
       siatkonator_log(DEBUG, "--------\n");
       siatkonator_log(DEBUG, "*** result of reading %s\n", input_ele_files->filename[i]);
@@ -120,15 +123,16 @@ int main(int argc, char **argv)
 
       siatkonator_log(DEBUG, "*** generating bounding polygon from %s\n", input_ele_files->filename[i]);
       bounding_polygon(bounds + i, meshes + i);
-      /*report(bounds + i, 0, 0, 0, 1, 0, 0);*/
-      /*siatkonator_log(DEBUG, "--------\n");*/
-      /*add_hole(&hull, bounds + i);*/
+      bounding_polygon_hole(bounds + i, meshes + i);
+      report(bounds + i, 0, 1, 0, 0, 0, 0);
+      add_hole(&hull, bounds + i);
+      siatkonator_log(DEBUG, "--------\n");
     }
   }
 
-  initialize_triangulatio(&mid);
-  initialize_triangulatio(&vorout);
-  initialize_triangulatio(&out);
+  initialize_triangulateio(&mid);
+  initialize_triangulateio(&vorout);
+  initialize_triangulateio(&out);
 
   triangulate("p", &hull, &out, &vorout); //TODO wziąć pod uwagę opcje podane przez usera
   siatkonator_log(DEBUG, "*** triangulation result:\n");
@@ -151,10 +155,18 @@ int main(int argc, char **argv)
     fclose(ele_out);
   }
 
-  return SUCCESS;
+
+fail:
+  if (input_ele_files->count) {
+    // TODO deeper free!
+    free(meshes);
+    // TODO deeper free!
+    free(bounds);
+  }
+  return error_value;
 }
 
-void initialize_triangulatio(triangulateio *mid){
+void initialize_triangulateio(triangulateio *mid){
   mid->pointlist = (REAL *) NULL;
   mid->pointattributelist = (REAL *) NULL;
   mid->pointmarkerlist = (int *) NULL;

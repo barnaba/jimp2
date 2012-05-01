@@ -93,6 +93,33 @@ void hash_init(sh_hash *hash, int size){
   }
 }
 
+sh_node *sh_as_list(sh_hash hash, int *size){
+  sh_node **hash_element = NULL;
+  sh_node *element = NULL;
+
+  sh_node head;
+  sh_node *tail = &head;
+
+  for(hash_element = hash.values; hash_element < hash.values + hash.size; hash_element++){
+    element = *hash_element;
+    while(element != NULL){
+      ++(*size);
+      tail->next = element;
+      tail = element;
+      element = element->next;
+    }
+  }
+  return head.next;
+}
+
+void sh_free_list(sh_node* node){
+  if(node == NULL)
+    return;
+  else
+    sh_free_list(node->next);
+    free(node);
+}
+
 int is_prime(int number){
   int div;
 
@@ -107,3 +134,12 @@ int is_prime(int number){
   return 1;
 }
 
+void triangulatio_to_hash(sh_hash hash, triangulateio *source){
+  int * current_triangle = source->trianglelist;
+  while (current_triangle < source->trianglelist + source->numberoftriangles * 3){
+    sh_try(hash, current_triangle[0], current_triangle[1]);
+    sh_try(hash, current_triangle[1], current_triangle[2]);
+    sh_try(hash, current_triangle[2], current_triangle[0]);
+    current_triangle += 3;
+  }
+}
