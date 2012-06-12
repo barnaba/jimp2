@@ -5,8 +5,10 @@
 
 void bounding_polygon(struct triangulateio *mesh,
 		      struct triangulateio *polygon);
-void add_hole(struct triangulateio *mesh,
+void bounding_polygon_hole(struct triangulateio *mesh,
+		      struct triangulateio *polygon);
+void add_bounds_as_segments(struct triangulateio *mesh,
 	      struct triangulateio *bounding_polygon);
 void mesh_Cat(struct triangulateio *dst, struct triangulateio *src);
-void bounding_polygon_hole(struct triangulateio *polygon,
+void add_bounding_segments(struct triangulateio *polygon,
     struct triangulateio *source);

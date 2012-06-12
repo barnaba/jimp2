@@ -175,6 +175,7 @@ int read_nodes(FILE * infile, triangulateio * input, int *markers,
 
   if (markers == 0){
     input->pointmarkerlist = NULL;
+    siatkonator_log(DEBUG, "No markers!\n");
   }
 
   siatkonator_log(DEBUG, "read %d nodes\n", i);
@@ -188,7 +189,7 @@ int write_node(FILE *file, struct triangulateio *output){
   REAL * current_attribute = output->pointattributelist;
   fprintf(file, "%d %d %d %d\n", output->numberofpoints, DIMENSIONS, output->numberofpointattributes, markers);
   for (i=0; i < output->numberofpoints; ++i){
-    fprintf(file, "%d %f %f ", i, output->pointlist[i*2], output->pointlist[i*2]+1);
+    fprintf(file, "%d %f %f ", i, output->pointlist[i*2], output->pointlist[i*2+1]);
     for (j=0; j < output->numberofpointattributes; ++j){
       fprintf(file, "%f ", *current_attribute);
       current_attribute++;
