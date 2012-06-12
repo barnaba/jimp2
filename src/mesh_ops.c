@@ -1,10 +1,13 @@
 #include "mesh_ops.h"
+#include <math.h>
 
 
 void reduce(triangulateio *polygon);
 void make_new_points_ids(triangulateio *polygon, int *new_numbers, int *pointcount);
 void reduce_pointlist(triangulateio *polygon, int *new_numbers);
 void update_segment_refs(triangulateio *polygon, int *new_numbers);
+void update_triangle_refs(triangulateio *polygon, int *new_numbers);
+void move_point(triangulateio *mesh, int dst, int src);
 
 
 void bounding_polygon(struct triangulateio *polygon,
@@ -48,9 +51,9 @@ void reduce(triangulateio *polygon){
   int new_pointcount = 0;
 
   make_new_points_ids(polygon, new_numbers, &new_pointcount);
-  polygon->numberofpoints = new_pointcount;
   reduce_pointlist(polygon, new_numbers);
   update_segment_refs(polygon, new_numbers);
+  polygon->numberofpoints = new_pointcount;
 
   free(new_numbers); return;
 }
@@ -84,39 +87,34 @@ void make_new_points_ids(triangulateio *polygon, int *new_numbers, int *pointcou
 
 void reduce_pointlist(triangulateio *polygon, int *new_numbers){
   int old_no, new_no;
-  REAL *pointlist = polygon->pointlist;
-  REAL *attributelist = polygon->pointattributelist;
-  int atr_count = polygon->numberofpointattributes;
-  int *markers = polygon->pointmarkerlist;
 
   for (int cur_point = 0; cur_point < polygon->numberofpoints; ++cur_point){
     if(-1 == new_numbers[cur_point])
       continue;
-
     old_no = cur_point;
     new_no = new_numbers[old_no];
 
     /*In place edit, so this has to be true, or data*/
     /*WILL BE overwritten*/
-
     assert(new_no <= old_no);
+    move_point(polygon, new_no, old_no);
+  }
 
+}
+void move_point(triangulateio *mesh, int dst, int src){
     /*move point coordinates*/
-    pointlist[new_no * DIMENSIONS] = pointlist[old_no * DIMENSIONS];
-    pointlist[new_no * DIMENSIONS + 1] = pointlist[old_no * DIMENSIONS + 1];
+    mesh->pointlist[dst * DIMENSIONS] = mesh->pointlist[src * DIMENSIONS];
+    mesh->pointlist[dst * DIMENSIONS + 1] = mesh->pointlist[src * DIMENSIONS + 1];
 
     /*move point attributes*/
-    for (int i=0; i<atr_count; i++){
-      attributelist[new_no * atr_count + i] = attributelist[old_no * atr_count + i];
+    for (int i=0; i<mesh->numberofpointattributes; i++){
+      mesh->pointattributelist[dst * mesh->numberofpointattributes + i] = mesh->pointattributelist[src * mesh->numberofpointattributes + i];
     }
 
     /*move point markers*/
-    if(markers != NULL){
-      markers[new_no] = markers[old_no];
+    if(mesh->pointmarkerlist != NULL){
+      mesh->pointmarkerlist[dst] = mesh->pointmarkerlist[src];
     }
-
-  }
-
 }
 
 void update_segment_refs(triangulateio *polygon, int *new_numbers){
@@ -124,6 +122,15 @@ void update_segment_refs(triangulateio *polygon, int *new_numbers){
   for(int seg_no = 0; seg_no < polygon->numberofsegments; seg_no++){
     for(int twice=0; twice < 2; twice++){
       seg_list[seg_no*2 + twice] = new_numbers[seg_list[seg_no*2 + twice]];
+    }
+  }
+}
+
+void update_triangle_refs(triangulateio *polygon, int *new_numbers){
+  int *tri_list = polygon->trianglelist;
+  for(int tri_no = 0; tri_no < polygon->numberoftriangles; tri_no++){
+    for(int thrice=0; thrice < 3; thrice++){
+      tri_list[tri_no*3 + thrice] = new_numbers[tri_list[tri_no*3 + thrice]];
     }
   }
 }
@@ -200,6 +207,76 @@ void add_bounding_segments(struct triangulateio *hull,
   return;
 }
 
-void mesh_Cat(struct triangulateio *dst, struct triangulateio *src){
+void mesh_cat(struct triangulateio *dst, struct triangulateio *src){
+  int point_count = dst->numberofpoints + src->numberofpoints;
+  int triangle_count = dst->numberoftriangles + src->numberoftriangles;
+  int point_offset = dst->numberofpoints;
+  int triangle_offset = dst->numberoftriangles;
+  int offseted_no;
+
+  // realloc pointlists to accomodate new points and segments
+  dst->pointlist = (REAL *) realloc(dst->pointlist, point_count * 2 * sizeof(REAL));
+  dst->pointattributelist = (REAL *) realloc(dst->pointattributelist, point_count * dst->numberofpointattributes * sizeof(REAL));
+  dst->pointmarkerlist = (int *) realloc(dst->pointmarkerlist, point_count * sizeof(int));
+  dst->trianglelist = (int *) realloc(dst->trianglelist, triangle_count * 3 * sizeof(int));
+
+  memcpy(dst->pointlist + dst->numberofpoints * 2, src->pointlist, src->numberofpoints * 2 * sizeof(REAL));
+  if(src->pointattributelist != NULL)
+    memcpy(dst->pointattributelist + dst->numberofpoints * dst->numberofpointattributes, src->pointattributelist, src->numberofpoints * dst->numberofpointattributes * sizeof(REAL));
+  if(src->pointmarkerlist != NULL)
+    memcpy(dst->pointmarkerlist + dst->numberofpoints, src->pointmarkerlist, src->numberofpoints * sizeof(int));
+
+  for(int tri_no=0; tri_no < src->numberoftriangles; ++tri_no){
+    offseted_no = tri_no + triangle_offset;
+    for (int i=0; i<3; i++)
+      dst->trianglelist[3*offseted_no + i] = src->trianglelist[3*tri_no + i] + point_offset;
+  }
+  dst->numberoftriangles = triangle_count;
+  dst->numberofpoints = point_count;
   return;
+}
+
+void remove_duplicates(struct triangulateio *mesh, double eps){
+  int *new_numbers = malloc(mesh->numberofpoints * sizeof(int));
+  char *original_of = malloc(mesh->numberofpoints * sizeof(char));
+  int new_pointcount = 0;
+  REAL x,y;
+
+  for(int i=0; i<mesh->numberofpoints; i++)
+    original_of[i] = -1;
+
+  for(int point=0; point < mesh->numberofpoints; ++point){
+    new_numbers[point] = point;
+  }
+
+  /*make list of duplicate nodes:
+   *from = originals, to = dups*/
+  for(int point=0; point < mesh->numberofpoints; ++point){
+    x = mesh->pointlist[point*2];
+    y = mesh->pointlist[point*2+1];
+    for(int other=point+1; other < mesh->numberofpoints; ++other){
+      if(fabs(x - mesh->pointlist[other*2]) < eps && fabs(y - mesh->pointlist[other*2+1]) < eps){
+        if (original_of[point] == -1)
+          original_of[other] = point;
+        else
+          original_of[other] = original_of[point];
+      }
+    }
+  }
+
+  for(int point=0; point < mesh->numberofpoints; ++point){
+    if (original_of[point] == -1){
+      new_numbers[point] = new_pointcount;
+      new_pointcount++;
+    } else {
+      new_numbers[point] = original_of[point];
+    }
+  }
+
+  reduce_pointlist(mesh, new_numbers);
+  update_segment_refs(mesh, new_numbers);
+  update_triangle_refs(mesh, new_numbers);
+  mesh->numberofpoints = new_pointcount;
+
+  free(new_numbers); return;
 }

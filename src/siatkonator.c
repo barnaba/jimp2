@@ -10,6 +10,7 @@
 #include "mesh_ops.h"
 
 #define MAXFILENAMELEN 500
+#define EPSILON 0.005
 
 void initialize_triangulateio(triangulateio *mid);
 FILE * open_for_writing(struct arg_file *output_file, const char * extension);
@@ -136,11 +137,28 @@ int main(int argc, char **argv)
   initialize_triangulateio(&out);
 
   siatkonator_log(DEBUG, "*** triangulation input:\n");
-  report(&hull, 1, 1, 0, 1, 0, 0);
+  report(&hull, 1, 0, 0, 1, 0, 0);
+  siatkonator_log(DEBUG, "--------\n");
   triangulate("pz", &hull, &out, &vorout); //TODO wziąć pod uwagę opcje podane przez usera
   siatkonator_log(DEBUG, "*** triangulation result:\n");
   report(&out, 0, 1, 0, 0, 0, 0);
   siatkonator_log(DEBUG, "--------\n");
+
+  if (input_ele_files->count) {
+    for (int i=0; i<input_ele_files->count; ++i){
+      mesh_cat(&out, meshes + i);
+    }
+  }
+  siatkonator_log(DEBUG, "*** Concatenation result:\n");
+  report(&out, 0, 1, 0, 0, 0, 0);
+  siatkonator_log(DEBUG, "--------\n");
+
+  remove_duplicates(&out, EPSILON);
+
+  siatkonator_log(DEBUG, "*** Dup removal result:\n");
+  report(&out, 0, 1, 0, 0, 0, 0);
+  siatkonator_log(DEBUG, "--------\n");
+
 
   /*
    * write the results
