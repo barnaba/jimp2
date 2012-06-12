@@ -1,6 +1,5 @@
 %\documentclass[a4paper]{scrartcl}
-\documentclass[a4paper]{article}
-\usepackage{setspace}
+\documentclass[a4paper]{article} \usepackage{setspace}
 \usepackage{url}
 \usepackage{mdwlist}
 \usepackage{polski}
@@ -108,8 +107,6 @@ Dostępne są następujące opcje:
 \begin{description}
   \item[\texttt{-e <name>}] dodaje siatkę, która zostanie ``sklejona'' z~wielokątem. Program zakłada, że istnieje także plik o~takiej samej nazwie bazowej z~rozszerzeniem \texttt{node} opisujący wierzchołki.
   \item[\texttt{-o <name>}] podaje nazwę pliku wyjściowego. W~przypadku braku tego parametru wynik zostanie wypisany na standardowe wejście (najpierw plik ele, potem node).
-  \item[\texttt{-a <area>}] określa maksymalną powierzchnię trójkąta (nie zmienia zadanych siatek!).
-  \item[\texttt{-q <degrees>}] określa minimalną miarę kąta w~trójkącie w~wygenerowanej siatce trójkątnej (nie zmienia zadanych siatek!),
 \end{description}
 
 W~przypadku powodzenia program zwraca zero. W~przeciwnym wypadku program zwraca jeden z~kodów błędu:
@@ -133,11 +130,6 @@ Ponadto program w~czasie działania wypisuje informacje o~swoim aktualnym stanie
 
 Wszystkie wykorzystywane formaty są zgodne z~formatami wykorzystywanymi przez program \triangle.
 
-\subsection{Dodatkowe uwagi}
-Odradzam użytkownikowi podawanie programowi siatek, które przecinają się ze sobą, bądź przecinają się z~podanym wielokątem.
-Jeżeli użytkownik koniecznie chce podać bezsensowne dane, to otrzyma bezsensowne wyniki.
-Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypisany żaden kod błędu.
-
 \newpage
 \section{Specyfikacja implementacyjna}
 \subsection{Struktura programu}
@@ -151,16 +143,19 @@ Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypis
   Program podzielony jest na trzy pliki:
   \begin{description}
     \item[siatkonator.c] Plik zawierający główną funkcję odpowiedzialną za wczytanie argumentów i~zależnie od nich wykonanie algorytmu sklejania siatek.
-    \item[siatkonator\_IO.c] Plik zawierający funkcje związane z~czytaniem i~zapisywaniem plików \emph{node}, \emph{ele} i \emph{poly} do struktur \texttt{triangulateio}.
+    \item[siatkonator\_IO] Katalog (moduł) zawierający funkcje związane z~czytaniem i~zapisywaniem plików \emph{node}, \emph{ele} i \emph{poly} do struktur \texttt{triangulateio}.
     \item[mesh\_ops.c] Plik zawierający funkcje obsługujące logikę sklejania siatek (znajdowanie wielokąta otaczającego siatkę, wycinanie dziur w~siatkach i~łączenie siatek).
     \item[common.c] Plik zawierający funkcje pomocnicze (takie jak wypisywanie wiadomości).
+    \item[siatkonator\_hash.c] Plik zawierający funkcje i~strukturę danych obsługującą tablicę mieszającą używaną do znajdowania wielokąta otaczającego siatkę..
   \end{description}
 
 \subsubsection{Funkcje modułu \texttt{mesh\_ops}}
 \begin{description}
   \item[\texttt{bounding\_polygon}] funkcja przyjmująca wskaźnik na wczytaną gotową siatkę i~znajdująca otaczający ją wielokąt (który należy wyciąć z~otoczki przed przeprowadzeniem triangulacji).
-  \item[\texttt{add\_hole}] Funkcja przyjmująca wskaźnik na wczytaną otoczkę (być może już z~dziurami) i~na wielokąt otaczający jedną ze sklejanych siatek. Funkcja dodaje do otoczki dziurę w~miejscu, w~którym zostanie w~nią wklejona siatka.
+  \item[\texttt{bounding\_polygon\_hole}] funkcja dodająca do otoczki dziurę o~współrzędnych równych środkowi ciężkości pierwszego trójkąta z~dodawanej siatki.
+  \item[\texttt{add\_bounds\_as\_segments}] funkcja dodająca znaleziony wcześniej otaczający wielokąt do otoczki.
   \item[\texttt{mesh\_cat}] Funkcja przyjmująca dwa wskaźniki na siatki i~dodająca elementy drugiej siatki do elementów pierwszej siatki.
+  \item[\texttt{remove\_duplicates}] Funkcja usuwająca wierzchołki o~identycznych lub podobnych współrzędnych.
 \end{description}
 
 \subsection{Algorytmy}
@@ -169,12 +164,12 @@ Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypis
   dla kazdego pliku .ele:
     wczytaj dane z plikow ele i nodes do struktury E
     znajdz w strukturze E krawedzie, ktore wystepuja tylko raz
-    usun te krawedzie ze struktury E
     dodaj te krawedzie do struktury P jako sekcje
-    dodaj dziure do struktury P wewnatrz kazdego trojkata ze struktury E
+    dodaj dziure do struktury P wewnatrz pierwszego trojkata ze struktury E
   wykonaj triangulacje na strukturze p do siatki S
   dla kazdego pliku .ele:
     wstaw siatke z pliku do dziur w siatce S
+  usun powtarzajace sie wierzcholki
   zapisz wynik triangulacji do plikow ele i node
 \end{lstlisting}
 
@@ -197,7 +192,7 @@ Taka sytuacja nie jest rozumiana jako błąd programu i~nie jest do niej przypis
 \end{lstlisting}
 
 \subsection{struktury danych}
-Struktura danych, której będę używał do komunikacji między funkcjami to struktura \texttt{triangulateio} dostarczona wraz z~programem triangle.
+Struktura danych używana do komunikacji między funkcjami to struktura \texttt{triangulateio} dostarczona wraz z~programem triangle.
 Struktura ta pozwala opisać siatkę na każdym etapie jej budowania (także siatki wyjściowe).
 
 Jej wadą jest fakt, że nie jest specjalizowana do konkretnych zadań i~wiele pól nie będzie miało zastosowania.
@@ -205,43 +200,108 @@ Mimo to jest już napisana, udokumentowana i~mogę być pewien, że zawiera wszy
 
 Zastosowanie innej struktury, jako struktury pośredniej wymagałoby tłumaczenia jej do \texttt{triangulateio} przed wykonaniem funkcji \texttt{triangulate()}.
 
-\subsection{Rozwiązywanie konfliktów atrybutów wierzchołków}
-Program bierze pod uwagę tylko pierwszy atrybut każdego wierzchołka.
+Zastosowana jest także tablica mieszająca, w~której konflikty rozwiązywane są za pomocą listy.
+Tablica potrafi też zwrócić wszystkie swoje elementy w~formie listy.
 
-Wczytując pliki program zapamiętuje najniższy i~najwyższy atrybut wierzchołka w~danym pliku.
-Następnie program oblicza stałą, o~którą należy przesunąć atrybuty wierzchołka w~tym pliku, aby nuniknąć konfliktu.
+\subsection{Obsługa atrybutów i~markerów}
+Atrybuty i~markery nie są obsługiwane.
 
-\begin{lstlisting}[caption=Przykład]
-  Jezeli w~pliku A.poly atrybuty wierzcholkow sa z~zakresu 1..10,
-  I~w~pliku B.node atrybuty sa z~zakresu 3..10,
-  To po wczytaniu A.poly najwiekszy znaleziony atrybut jest 10,
-  I~po wczytaniu B.node najmniejszy znaleziony atrybut bedzie 3,
-  Wiec nalezy wszystkie atrybuty wierzcholkow znalezionych w~B.node przesunac o~(10-3)
+\section{Testy aplikacji}
+\subsection{Testy automatyczne}
+Aplikacja zawiera kilkanaście testów automatycznych napisanych na początku w~języku Ruby.
+Testy te sprawdzają rzeczy łatwe do sprawdzenia z~zewnątrz - obsługę argumentów, poprawność wczytywania plików.
+Przy okazji testy były bardzo pomocne jako wczesny wskaźnik tego, że coś się zepsuło - bardzo podstawowe testy regresyjne, polegające na uruchomieniu programu i~sprawdzeniu jego kodu wyjścia.
+
+Zostały zaimplementowane następujące testy:
+\begin{lstlisting}[caption=Testy automatyczne]
+siatkonator IO                                            
+  when it reads square.poly                               
+    should read poly file without error                   
+    should read nodes coordinates and attributes properly 
+    should read nodes segments and holes properly         
+  when it reads square-firstnode-1.poly                   
+    should read poly file without error                   
+    should read nodes coordinates and attributes properly 
+    should read nodes segments and holes properly         
+  when it reads square-firstnode-1.poly                   
+    should read poly and ele files without error          
+    should read 1.ele and 1.node properly                 
+    should read 2.ele and 2.node properly                 
+                                                          
+siatkonator argument reader                               
+  should require at least one option                      
+  should be ok when option given                          
+  should fail when the only option is preceded with switch
+  should notify that max surface was set                  
+  should notify that min angle was set                    
+  should notify that mesh files were provided             
+  should notify that output file was set                  
+                                                          
+Finished in 0.09719 seconds                               
+16 examples, 0 failures                                   
+                                                          
 \end{lstlisting}
 
-W~związku z~tym wynik działania programu \textbf{zależy} od kolejności podanych plików wejściowych.
+\subsection{Tryb debug}
+Aplikacja wyposażona jest w tryb wspomagający testowanie, w którym wypisuje swój stan na standardowe wyjście.
+To, czy aplikacja działa w tym trybie zależy od flag kompilacji.
 
-Po takim podziale pozostała przestrzeń zmiennej używana jest do rozwiązywania konfliktów wynikających z~tego, że dwa wierzchołki o~różnych atrybutach znalazły się w~tym samym miejscu.
+Ponieważ nie chciałem uzależniać moich funkcji od zmiennych globalnych i wypisywania danych (ze względu na \emph{Single Responsibility Principle}) ograniczyłem całe wypisywanie do funkcji siatkonator log,
+która w~razie czego może zostać zastąpiona pustą funkcją. Zbieranie informacji diagnostycznych w~funkcji main byłoby bardzo kłopotliwe i~spowodowałoby, że funkcja rozrosłaby się jeszcze bardziej.
 
-Jeśli oba wierzchołki mają taką samą wartość atrybutu, atrybut \textbf{nie zostaje} zachowany (wynika to z~faktu rozdzielenia przestrzeni atrybutów).
+Aplikacja wypisuje zawartość struktur \texttt{triangulateio} na następujących etapach:
+\begin{itemize}
+  \item wczytanie plików (poly, node+ele);
+  \item znalezienie wielokąta ograniczającego;
+  \item dodanie wielokąta ograniczającego i~dziury;
+  \item po/przed wywołaniu funkcji triangulate;
+  \item po ponownym dodaniu siatek
+  \item po usunięciu duplikatów
+\end{itemize}
 
-Jeśli oba wierzchołki mają różną wartość atrybutów, zostaje im przydzielona nowa wartość z~zakresu wartości przeznaczonego na konflikty za pomocą prostej funkcji mieszającej
-(znajdowana jest największa liczba pierwsza w~dostępnym zakresie. Atrybut nowego wierzchołka to:
+Ponadto program wypisuje różne informacje podsumowujące jego działanie, takie jak np. informacja z~jakich plików będzie korzystał i~ile wierzchołków wczytał.
 
-\begin{lstlisting}[caption=]
-(Atrybut\ A + Atrybut\ B) % (liczba pierwsza) + offset zakresu
+\subsection{Testy eksploracyjne}
+Testy, których większość była wykonywana w~czasie pisania programu polegające na sprawdzaniu, czy robi to co powinien robić.
+Do tych testów stosowałem własne pliki, przykładowe pliki dostępne na stronie \texttt{wikidyd}, pliki testowe kolegi oraz plik przedstawiający literę 'A' będący częścią dystrybucji Triangle.
+
+\newpage
+\subsubsection{Podstawowe testy}
+Pierwsze dwa proste testy, które przeprowadziłem dotyczyły kwadratowej otoczki.
+Testy korzystały z~najprostszych możliwych siatek - trójkątów.
+W~jednym teście wklejono do otoczki jedną siatkę, w~drugim dwie.
+
+Komendy, za pomoca ktorych uzyskalem te wyniki sa nastepujace\footnote{wszystkie pliki z~których korzystałem do testów są w~repozytorium}:
+\begin{lstlisting}
+./bin/siatkonator -e spec/data/2.ele -o test spec/data/square-no-holes.poly
+./bin/siatkonator -e spec/data/1.ele -e spec/data/2.ele -o test spec/data/square-no-holes.poly
 \end{lstlisting}
 
-Takie rozwiązanie gwarantuje, że elementy będące połączeniem danych atrybutów zawsze będą miały ten sam atrybut w~pliku wynikowym.
+\includegraphics[width=0.5\textwidth]{1_trojkat.pdf}
+\includegraphics[width=0.5\textwidth]{2_trojkaty.pdf}
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.8\textwidth]{konflikty.png}
-  \caption{przykład podziału przestrzeni atrybutów}
-\end{figure}
+\subsubsection{Test wyznaczania otoczki}
+W~następnym teście skorzystałem z~bardziej złożonej siatki - kwadratu złożonego z~trzech trójkątów.
+Miało to na celu upewnienie się, że funkcje określające wielokąt otaczający działają zgodnie z~założeniami.
 
+W~ramach tego testu wydałem dwa razy te samą komendę, ale za pierwszym razem wykomentowałem wywołanie funkcji wklejającej siatkę do przeznaczonej dla niej dziury:
+\begin{lstlisting}
+./bin/siatkonator -e spec/data/kwadrat.ele -o test spec/data/square-no-holes.poly
+./bin/siatkonator -e spec/data/kwadrat.ele -o test spec/data/square-no-holes.poly
+\end{lstlisting}
+\includegraphics[width=0.5\textwidth]{kwadrat_empty.pdf}
+\includegraphics[width=0.5\textwidth]{kwadrat_full.pdf}
 
+Dzięki temu zabiegowi można się przekonać, że wielokąt otaczający, w~tym wypadku kwadrat, został wyznaczony poprawnie oraz że zostały z~niego usunięte wszystkie wierzchołki i~segmenty, które nie są częścią wielokąta otaczającego.
 
+\subsubsection{Test z~większym plikiem}
+W~ramach tego testu skorzystałem z~pliku poly opisującego literę 'A' złożoną z~kilkudziesięciu trójkątów, który jest dystrybuowany razem z~trianglem.
+\begin{lstlisting}
+./bin/siatkonator -e spec/data/cieciurm/A.1.ele -o test spec/data/square-large.poly
+\end{lstlisting}
+\includegraphics[width=0.5\textwidth]{litera_a.pdf}
 
+\subsubsection{Pozostałe}
+Nie udało mi się przejść testu \texttt{trap.poly}.
 
 \end{document}

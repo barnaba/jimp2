@@ -1,8 +1,8 @@
-document_name = "javamp"
+document_name = "jimp"
 task :default => [:see]
 
 task :see => ["#{document_name}.pdf"] do
-  sh "xpdf #{document_name}.pdf &"
+  sh "evince #{document_name}.pdf &"
 end
 
 file "#{document_name}.pdf" => ["#{document_name}.tex"] do
