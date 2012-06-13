@@ -93,6 +93,7 @@ int main(int argc, char **argv)
     }
 
   }
+  asprintf(&optstring, "p%szV", optstring);
 
   /*
    * Getting input from files
@@ -128,7 +129,7 @@ int main(int argc, char **argv)
 
       siatkonator_log(DEBUG, "*** generating bounding polygon from %s\n", input_ele_files->filename[i]);
       bounding_polygon(bounds + i, meshes + i);
-      /*bounding_polygon_hole(&hull, meshes + i);*/
+      bounding_polygon_hole(&hull, meshes + i);
       report(bounds + i, 0, 1, 0, 1, 0, 0);
       add_bounding_segments(&hull, bounds + i);
       siatkonator_log(DEBUG, "--------\n");
@@ -138,13 +139,12 @@ int main(int argc, char **argv)
   initialize_triangulateio(&mid);
   initialize_triangulateio(&vorout);
   initialize_triangulateio(&out);
-  asprintf(&optstring, "p%szV", optstring); 
 
   siatkonator_log(DEBUG, "*** triangulation input:\n");
   report(&hull, 1, 0, 0, 1, 0, 0);
   siatkonator_log(DEBUG, "--------\n");
   siatkonator_log(DEBUG, "*** using option string: \"%s\"\n", optstring);
-  triangulate(optstring, &hull, &out, (struct triangulatio*) NULL); //TODO wziąć pod uwagę opcje podane przez usera
+  triangulate(optstring, &hull, &out, (struct triangulatio*) NULL);
   siatkonator_log(DEBUG, "*** triangulation result:\n");
   report(&out, 0, 1, 0, 0, 0, 0);
   siatkonator_log(DEBUG, "--------\n");

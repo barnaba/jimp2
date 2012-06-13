@@ -17,7 +17,7 @@ void bounding_polygon(struct triangulateio *polygon,
   sh_node *current_segment;
   int size, i = 0;
 
-  hash_init(&hash, source->numberoftriangles);
+  hash_init(&hash, source->numberoftriangles*3);
   triangulatio_to_hash(hash, source);
   segments = sh_as_list(hash, &size);
 

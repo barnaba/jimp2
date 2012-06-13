@@ -25,8 +25,8 @@ void sh_remove(sh_hash hash, int id_a, int id_b){
   sh_node *prev = NULL;
   node = hash.values[hash_address];
   if (node->id_a == id_a && node->id_b == id_b){
+    hash.values[hash_address] = node->next;
     free(node);
-    hash.values[hash_address] = NULL;
     return;
   }
   while (node != NULL){
@@ -55,6 +55,9 @@ void sh_insert(sh_hash hash, int id_a, int id_b){
   hash.values[hash_address] = node;
 }
 
+// try inserting a value in the hash.
+// if the value already is in the hash
+// remove the existing value and abort.
 void sh_try(sh_hash hash, int id_a, int id_b){
   int swap_id;
 
@@ -67,10 +70,8 @@ void sh_try(sh_hash hash, int id_a, int id_b){
 
   if (sh_contains(hash, id_a, id_b)){
     sh_remove(hash, id_a, id_b);
-    siatkonator_log(DEBUG, "HASH REMOVE: %d %d\n", id_a, id_b);
   } else {
     sh_insert(hash, id_a, id_b);
-    siatkonator_log(DEBUG, "HASH INSERT: %d %d\n", id_a, id_b);
   }
 
 }
