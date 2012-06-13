@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -I/usr/local/include -Wall -ansi -D_GNU_SOURCE -std=gnu99 -DVERBOSE -g
-LDFLAGS = -L/usr/local/lib
+LDFLAGS = -Lvendor/argtable2-13/
 LDLIBS = -largtable2 -lm
 ODIR = obj
 SDIR = src

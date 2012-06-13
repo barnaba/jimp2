@@ -1,0 +1,1 @@
+/home/barnex/kod/jimp2/vendor/argtable2-13/src/CMakeFiles/argtable2.dir
