@@ -59,6 +59,8 @@ void reduce(triangulateio *polygon){
   free(new_numbers); return;
 }
 
+// mark all points referenced by segments
+// then calculate new point numbers for them (used when removing other points).
 void make_new_points_ids(triangulateio *polygon, int *new_numbers, int *pointcount){
   /*TODO: how about a bit array?*/
   *pointcount = 0;
@@ -86,6 +88,9 @@ void make_new_points_ids(triangulateio *polygon, int *new_numbers, int *pointcou
   return;
 }
 
+// make points more sparse according to new_numbers array.
+// new_numbers[point_number] specifies new number of that point.
+// -1 means that point is to be discarded.
 void reduce_pointlist(siatkonator_program *program, triangulateio *polygon, int *new_numbers){
   int old_no, new_no;
 
@@ -104,6 +109,8 @@ void reduce_pointlist(siatkonator_program *program, triangulateio *polygon, int 
   }
 
 }
+
+
 void move_point(triangulateio *mesh, int dst, int src){
     /*move point coordinates*/
     mesh->pointlist[dst * DIMENSIONS] = mesh->pointlist[src * DIMENSIONS];

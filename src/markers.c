@@ -3,6 +3,7 @@
 
 #include "markers.h"
 
+// get lowest and highest marker for mesh
 void get_pointmarkerlist_range(triangulateio *mesh, int *low, int *high){
   int *current;
   *high = INT_MIN;
@@ -18,6 +19,7 @@ void get_pointmarkerlist_range(triangulateio *mesh, int *low, int *high){
   }
 }
 
+// calculate offsets that will remove overlaps in markers
 int *get_offsets(siatkonator_program *program){
   // `mesh_count + 1`, because there's poly file with markers!
   int *offsets = (int*) malloc((program->mesh_count + 1)*sizeof(int));
@@ -32,6 +34,7 @@ int *get_offsets(siatkonator_program *program){
   return offsets;
 }
 
+// apply offsets to all markers in mesh
 void offset_markers(triangulateio *mesh, int offset){
   for(int i=0; i < mesh->numberofpoints; ++i)
     mesh->pointmarkerlist[i] += offset;
@@ -44,10 +47,12 @@ void conflict_resolution_init(siatkonator_program *program, int highest_marker){
   program->conflicted_markers_size = size; 
 }
 
+// calculate hash-like value for conflicted marker (occurs when two points with different markers are merged into one).
 int resolve_marker_conflict(siatkonator_program program, int marker_a, int marker_b){
   return program.conflicted_markers_offset + (marker_a * 9973 + marker_b * 57) % program.conflicted_markers_size;
 }
 
+// orchestrates the process of marker overlap removal
 void adjust_markers(siatkonator_program *program, triangulateio *hull, triangulateio *meshes){
   int *offsets = get_offsets(program);
   for(int i=0; i < program->mesh_count + 1; ++i){
