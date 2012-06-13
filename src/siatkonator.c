@@ -52,6 +52,7 @@ int main(int argc, char **argv)
   triangulateio *bounds;
   triangulateio mid, out, vorout;
   initialize_triangulateio(&hull);
+  char* optstring = "";
 
   /*
    * Argument parsing
@@ -78,10 +79,12 @@ int main(int argc, char **argv)
   if (nerrors == 0) {
     if (surface->count) {
       siatkonator_log(INFO, "Maximum surface: %f", surface->dval[0]);
+      asprintf(&optstring, "%sa%g", optstring, surface->dval[0]); 
     }
 
     if (angle->count) {
       siatkonator_log(INFO, "Minimal angle: %f", angle->dval[0]);
+      asprintf(&optstring, "%sq%g", optstring, angle->dval[0]); 
     }
 
     if (output_file->count) {
@@ -125,7 +128,7 @@ int main(int argc, char **argv)
 
       siatkonator_log(DEBUG, "*** generating bounding polygon from %s\n", input_ele_files->filename[i]);
       bounding_polygon(bounds + i, meshes + i);
-      bounding_polygon_hole(&hull, meshes + i);
+      /*bounding_polygon_hole(&hull, meshes + i);*/
       report(bounds + i, 0, 1, 0, 1, 0, 0);
       add_bounding_segments(&hull, bounds + i);
       siatkonator_log(DEBUG, "--------\n");
@@ -135,11 +138,13 @@ int main(int argc, char **argv)
   initialize_triangulateio(&mid);
   initialize_triangulateio(&vorout);
   initialize_triangulateio(&out);
+  asprintf(&optstring, "p%szV", optstring); 
 
   siatkonator_log(DEBUG, "*** triangulation input:\n");
   report(&hull, 1, 0, 0, 1, 0, 0);
   siatkonator_log(DEBUG, "--------\n");
-  triangulate("pz", &hull, &out, &vorout); //TODO wziąć pod uwagę opcje podane przez usera
+  siatkonator_log(DEBUG, "*** using option string: \"%s\"\n", optstring);
+  triangulate(optstring, &hull, &out, (struct triangulatio*) NULL); //TODO wziąć pod uwagę opcje podane przez usera
   siatkonator_log(DEBUG, "*** triangulation result:\n");
   report(&out, 0, 1, 0, 0, 0, 0);
   siatkonator_log(DEBUG, "--------\n");
@@ -184,6 +189,7 @@ fail:
     // TODO deeper free!
     free(bounds);
   }
+  /*free(optstring);*/
   return error_value;
 }
 
@@ -202,6 +208,12 @@ void initialize_triangulateio(triangulateio *mid){
   mid->edgelist = (int  *) NULL;
   mid->edgemarkerlist = (int  *) NULL;
   mid->normlist = (REAL *) NULL;
+  mid->numberofpoints = 0;
+  mid->numberofsegments = 0;
+  mid->numberofregions = 0;
+  mid->numberofcorners = 0;
+  mid->numberoftriangleattributes= 0;
+  mid->numberoftriangles = 0;
   return;
 }
 

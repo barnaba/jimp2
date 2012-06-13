@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I/usr/local/include -Wall -ansi -std=gnu99 -DVERBOSE -g
+CFLAGS = -I/usr/local/include -Wall -ansi -D_GNU_SOURCE -std=gnu99 -DVERBOSE -g
 LDFLAGS = -L/usr/local/lib
 LDLIBS = -largtable2 -lm
 ODIR = obj
@@ -30,7 +30,7 @@ $(ODIR)/%.o: $(SDIR)/io/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(ODIR)/triangle.o: vendor/triangle/triangle.c
-	$(CC) -c -DSELF_CHECK -DTRILIBRARY -DLINUX -DCDT_ONLY -o $@ $<
+	$(CC) -c -DSELF_CHECK -DTRILIBRARY -DLINUX -o $@ $<
 
 clean:
 	rm -rf obj/*
