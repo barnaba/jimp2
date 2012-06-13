@@ -121,19 +121,6 @@ void sh_free_list(sh_node* node){
     free(node);
 }
 
-int is_prime(int number){
-  int div;
-
-  if (number < 5){
-    return 0;
-  }
-
-  for(div=2; div <= number/2; div++){
-    if (number % div == 0)
-      return 0;
-  }
-  return 1;
-}
 
 void triangulatio_to_hash(sh_hash hash, triangulateio *source){
   int * current_triangle = source->trianglelist;

@@ -12,4 +12,4 @@ void add_bounds_as_segments(struct triangulateio *mesh,
 void mesh_cat(struct triangulateio *dst, struct triangulateio *src);
 void add_bounding_segments(struct triangulateio *polygon,
     struct triangulateio *source);
-void remove_duplicates(struct triangulateio *out, double eps);
+void remove_duplicates(siatkonator_program program, struct triangulateio *mesh);

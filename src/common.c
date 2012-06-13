@@ -1,6 +1,20 @@
 #include "common.h"
 #include <stdarg.h>
 
+int is_prime(int number){
+  int div;
+
+  if (number < 5){
+    return 0;
+  }
+
+  for(div=2; div <= number/2; div++){
+    if (number % div == 0)
+      return 0;
+  }
+  return 1;
+}
+
 void siatkonator_log(int level, const char *format, ...)
 {
   if (level >= LOG_LEVEL){

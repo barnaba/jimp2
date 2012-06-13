@@ -25,6 +25,8 @@ int read_node_file(const char *filename, triangulateio * input,
   if (error_value != SUCCESS)
     return error_value;
 
+  fclose(polyfile);
+
   return SUCCESS;
 }
 

@@ -8,6 +8,7 @@
 #include "io/node.h"
 #include "io/ele.h"
 #include "mesh_ops.h"
+#include "markers.h"
 
 #define MAXFILENAMELEN 500
 #define EPSILON 0.005
@@ -28,6 +29,8 @@ int main(int argc, char **argv)
 				     "maximum surface of the triangle");
   struct arg_dbl *angle = arg_dbl0("q", "angle", "<VALUE>",
 				   "minimum angle used for triangles");
+  struct arg_dbl *epsilon = arg_dbl0("d", "eps", "<VALUE>",
+				   "epsilon used for comparing node coordinates");
   struct arg_file *input_ele_files =
       arg_filen("e", "elements", "<.ELE FILE>", 0, argc, "input meshes");
   struct arg_file *input_poly_file =
@@ -42,6 +45,8 @@ int main(int argc, char **argv)
   };
   int error_value = 0;
   FILE *ele_out, *node_out;
+  siatkonator_program self;
+  self.eps = EPSILON;
 
   /*
    * TriangulateIO instances
@@ -87,6 +92,11 @@ int main(int argc, char **argv)
       asprintf(&optstring, "%sq%g", optstring, angle->dval[0]); 
     }
 
+    if (epsilon->count) {
+      siatkonator_log(INFO, "epsilon: %f", epsilon->dval[0]);
+      self.eps = epsilon->dval[0];
+    }
+
     if (output_file->count) {
       siatkonator_log(INFO, "Results will be saved to %s.ele and %s.node",
 		      output_file->filename[0], output_file->filename[0]);
@@ -105,15 +115,21 @@ int main(int argc, char **argv)
     return error_value;
   siatkonator_log(DEBUG, "--------\n");
 
-  hull.numberofregions = 0; //TODO wczytywanie regionów
+  self.mesh_count = input_ele_files->count;
+  
+  if (self.mesh_count) {
+    // `mesh_count + 1`, because there's poly file with markers!
+    self.marker_range_start = (int *) malloc((self.mesh_count+1) * sizeof(int));
+    self.marker_range_end = (int *) malloc((self.mesh_count+1) * sizeof(int));
 
-  if (input_ele_files->count) {
-    meshes = malloc(input_ele_files->count * sizeof(triangulateio));
-    bounds = malloc(input_ele_files->count * sizeof(triangulateio));
+    meshes = malloc(self.mesh_count * sizeof(triangulateio));
+    bounds = malloc(sizeof(triangulateio));
 
-    for (int i=0; i<input_ele_files->count; ++i){
-      initialize_triangulateio(meshes +i );
-      initialize_triangulateio(bounds +i );
+    get_pointmarkerlist_range(&hull, self.marker_range_start + self.mesh_count, self.marker_range_end + self.mesh_count);
+
+    for (int i=0; i < self.mesh_count; ++i){
+      initialize_triangulateio(meshes+i);
+      initialize_triangulateio(bounds);
 
       siatkonator_log(INFO, "*** reading %s\n", input_ele_files->filename[i]);
 
@@ -122,19 +138,29 @@ int main(int argc, char **argv)
       if (error_value != SUCCESS)
         goto fail;
 
+      if ((meshes+i)->numberofpointattributes != hull.numberofpointattributes){
+        siatkonator_log(INFO, "*** Error - number of point attributes is different!");
+        goto fail;
+      }
+
       siatkonator_log(DEBUG, "--------\n");
       siatkonator_log(DEBUG, "*** result of reading %s\n", input_ele_files->filename[i]);
       report(meshes + i, 1, 1, 0, 0, 0, 0);
       siatkonator_log(DEBUG, "--------\n");
-
       siatkonator_log(DEBUG, "*** generating bounding polygon from %s\n", input_ele_files->filename[i]);
-      bounding_polygon(bounds + i, meshes + i);
+
+      bounding_polygon(bounds, meshes + i);
       bounding_polygon_hole(&hull, meshes + i);
-      report(bounds + i, 0, 1, 0, 1, 0, 0);
-      add_bounding_segments(&hull, bounds + i);
+
+      report(bounds, 0, 1, 0, 1, 0, 0);
       siatkonator_log(DEBUG, "--------\n");
+
+      add_bounding_segments(&hull, bounds);
+      get_pointmarkerlist_range(meshes+i, self.marker_range_start+i, self.marker_range_end+i);
+      siatkonator_log(DEBUG, "markers in range: %d - %d \n", self.marker_range_start[i], self.marker_range_end[i]);
     }
   }
+  adjust_markers(&self, &hull, meshes);
 
   initialize_triangulateio(&mid);
   initialize_triangulateio(&vorout);
@@ -158,7 +184,7 @@ int main(int argc, char **argv)
   report(&out, 0, 1, 0, 0, 0, 0);
   siatkonator_log(DEBUG, "--------\n");
 
-  remove_duplicates(&out, EPSILON);
+  remove_duplicates(self, &out);
 
   siatkonator_log(DEBUG, "*** Dup removal result:\n");
   report(&out, 0, 1, 0, 0, 0, 0);
@@ -236,7 +262,4 @@ FILE * open_for_writing(struct arg_file *output_file, const char * extension){
   }
   return file;
 }
-
-
-
 

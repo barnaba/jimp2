@@ -24,9 +24,20 @@
 
 #include "../vendor/triangle/triangle.h"
 typedef struct triangulateio triangulateio;
-#endif
+
+typedef struct {
+  int mesh_count;
+  int *marker_range_start;
+  int *marker_range_end;
+  REAL eps;
+  // used for marker conflict resolution:
+  int conflicted_markers_offset;
+  int conflicted_markers_size;
+} siatkonator_program;
 
 void siatkonator_log(int level, const char *format, ...);
 void report(triangulateio * io, int markers, int reporttriangles,
 	    int reportneighbors, int reportsegments, int reportedges,
 	    int reportnorms);
+int is_prime(int number);
+#endif

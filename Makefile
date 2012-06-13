@@ -15,6 +15,7 @@ ORIG_OBJ = mesh_ops.o \
 			segments.o \
 			holes.o \
 			ele.o \
+			markers.o \
 			siatkonator_hash.o
 
 OBJ = $(patsubst %,$(ODIR)/%,$(ORIG_OBJ))

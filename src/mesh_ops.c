@@ -1,10 +1,11 @@
 #include "mesh_ops.h"
+#include "markers.h"
 #include <math.h>
 
 
 void reduce(triangulateio *polygon);
 void make_new_points_ids(triangulateio *polygon, int *new_numbers, int *pointcount);
-void reduce_pointlist(triangulateio *polygon, int *new_numbers);
+void reduce_pointlist(siatkonator_program *program, triangulateio *polygon, int *new_numbers);
 void update_segment_refs(triangulateio *polygon, int *new_numbers);
 void update_triangle_refs(triangulateio *polygon, int *new_numbers);
 void move_point(triangulateio *mesh, int dst, int src);
@@ -51,7 +52,7 @@ void reduce(triangulateio *polygon){
   int new_pointcount = 0;
 
   make_new_points_ids(polygon, new_numbers, &new_pointcount);
-  reduce_pointlist(polygon, new_numbers);
+  reduce_pointlist((siatkonator_program*) NULL, polygon, new_numbers);
   update_segment_refs(polygon, new_numbers);
   polygon->numberofpoints = new_pointcount;
 
@@ -85,7 +86,7 @@ void make_new_points_ids(triangulateio *polygon, int *new_numbers, int *pointcou
   return;
 }
 
-void reduce_pointlist(triangulateio *polygon, int *new_numbers){
+void reduce_pointlist(siatkonator_program *program, triangulateio *polygon, int *new_numbers){
   int old_no, new_no;
 
   for (int cur_point = 0; cur_point < polygon->numberofpoints; ++cur_point){
@@ -98,6 +99,8 @@ void reduce_pointlist(triangulateio *polygon, int *new_numbers){
     /*WILL BE overwritten*/
     assert(new_no <= old_no);
     move_point(polygon, new_no, old_no);
+    if(program != NULL && polygon->pointmarkerlist[old_no] != polygon->pointmarkerlist[new_no])
+      polygon->pointmarkerlist[new_no] = resolve_marker_conflict(*program, polygon->pointmarkerlist[old_no], polygon->pointmarkerlist[new_no]);
   }
 
 }
@@ -236,7 +239,7 @@ void mesh_cat(struct triangulateio *dst, struct triangulateio *src){
   return;
 }
 
-void remove_duplicates(struct triangulateio *mesh, double eps){
+void remove_duplicates(siatkonator_program program, struct triangulateio *mesh){
   int *new_numbers = malloc(mesh->numberofpoints * sizeof(int));
   char *original_of = malloc(mesh->numberofpoints * sizeof(char));
   int new_pointcount = 0;
@@ -255,7 +258,7 @@ void remove_duplicates(struct triangulateio *mesh, double eps){
     x = mesh->pointlist[point*2];
     y = mesh->pointlist[point*2+1];
     for(int other=point+1; other < mesh->numberofpoints; ++other){
-      if(fabs(x - mesh->pointlist[other*2]) < eps && fabs(y - mesh->pointlist[other*2+1]) < eps){
+      if(fabs(x - mesh->pointlist[other*2]) < program.eps && fabs(y - mesh->pointlist[other*2+1]) < program.eps){
         if (original_of[point] == -1)
           original_of[other] = point;
         else
@@ -273,7 +276,7 @@ void remove_duplicates(struct triangulateio *mesh, double eps){
     }
   }
 
-  reduce_pointlist(mesh, new_numbers);
+  reduce_pointlist(&program, mesh, new_numbers);
   update_segment_refs(mesh, new_numbers);
   update_triangle_refs(mesh, new_numbers);
   mesh->numberofpoints = new_pointcount;
